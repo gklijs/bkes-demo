@@ -6,8 +6,7 @@
 
 (def routes ["/" {""                                  :home
                   "employee"                          :bank-employee
-                  "client"                            :client
-                  ["results/" :category "/" :x-value] :results}])
+                  "client"                            :client}])
 
 (defn- parse-url [url]
   (bidi/match-route routes url))
@@ -15,11 +14,7 @@
 (defn- dispatch-route [matched-route]
   (let [handler (:handler matched-route)
         params (:route-params matched-route)]
-    (re-frame/dispatch [::events/set-selected-nav handler])
-    (if-let [category (:category params)]
-      (re-frame/dispatch [::events/set-category (keyword category)]))
-    (if-let [x-value (:x-value params)]
-      (re-frame/dispatch [::events/set-x-value (keyword x-value)]))))
+    (re-frame/dispatch [::events/set-selected-nav handler])))
 
 (defn app-routes []
   (pushy/start! (pushy/pushy dispatch-route parse-url)))

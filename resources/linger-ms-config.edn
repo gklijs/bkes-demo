@@ -1,4 +1,0 @@
-{:mapping {"0"   "linger-ms-0-*"
-           "10"  "linger-ms-10-*"
-           "25"  "linger-ms-25-*"
-           "100" "linger-ms-100-*"}}

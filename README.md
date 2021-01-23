@@ -25,7 +25,6 @@ Contents
   * [Command handler](#command-handler)
   * [Graphql endpoint](#graphql-endpoint)
   * [Frontend](#frontend)
-  * [Test](#test)
 * [Scripts](#scripts)
 
 ## <a id="intro">Intro</a>
@@ -241,31 +240,12 @@ The location of the GraphQL endpoint is configured in [core.cljs](frontend/src/c
 Nginx now just serves static files, but could be used to proxy traffic to the graphql endpoint to prevent CORS.
 If you run into CORS trouble localy you may need to add the specific port you use to run the front-end to the [server.clj](graphql-endpoint/src/nl/openweb/graphql_endpoint/server.clj) in the endpoint at the `:io.pedestal.http/allowed-origins` key.
 
-### <a id="test">Test</a>
-
-This module contains the code both to run tests and to generate multiple html files from one or multiple run tests.
-Each run tests will write a .edn file in the resources folder. The name is a combination of the `base-file-name` in [file.clj](test/src/nl/openweb/test/file.clj) and the year, month, day, hour and minute the test is started.
-A mapping can be edited in the [mapping.edn](resources/linger-ms-config.edn) file. You can combine several files if they start the same by adding a '\*', for example 'clojure-\*' will combine all the test run files starting with 'clojure-'.
-A test will start by making some connections and waiting till the user is logged in. When this happens the client will have received and Iban and the matching token in order to transfer money.
-It will run depending on some settings in [core.clj](test/src/nl/openweb/test/core.clj). It will run till `max-time-outs` occur, where a time-out is when the response takes longer then `max-interaction-time` ms. The `batch-cycle` determines after how many cycles the load is increases.
-The `loops-for-success` determines the exit code, and with it a successful run for travis.
-
-![Test run](docs/running-a-test.svg)
-
-To display the test runs the files are combined and sorted on additional-load, the averages and standard error are also calculated.
-
-![Test run](docs/output-a-test.svg)
-
-It's the easiest to run the tests and generate the output with the scripts using the fat jar. But you could also run them directly using lein, but some of the paths need to be changed to do so. 
-
 ## <a id="scripts">Scripts</a>
 
 There are several scripts to automate things. They are placed at the root level.
 * `clean.sh` stops and removes all used Docker container, it does not throw away the images
 * `create-certs.sh` is used to create a docker volume with the needed certs/secrets.
-* `loop.sh` takes a number and a test configuration and will (re)create the whole environment, and run a test, using the said configuration x times.
 * `prepare.sh` is needed the first time before `restart.sh` can be used. It will get all the dependencies and build jar's. It needs leiningen, maven, sassc to be installed. As last step it will (re)build the docker images.
 * `restart.sh` is used to stop and start the whole setup, it does not start a test. When it's finished the application should be accessible at port 8181. 
 * `setup-db-ch.sh` and `setup-db-ge.sh` are used to setup the database. It takes the name of the Docker container to execute it on as the first argument and the port used as the second. When running a local PostgreSQL you could copy parts of it to create the users, tables and indexes.
 * `synchronize.sh` is used as part of the restart to set both the Kafka topics and schema's in the schema registry.
-* `create-data-json.sh` needs a name argument, matching a .edn file in resources with a mapping. It will process the data so it can be used by vega in the frontend.
