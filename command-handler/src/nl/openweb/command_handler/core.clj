@@ -1,59 +1,22 @@
 (ns nl.openweb.command-handler.core
-  (:require [nl.openweb.command-handler.db :as db]
-            [nl.openweb.topology.clients :as clients]
-            [nl.openweb.topology.value-generator :as vg])
-  (:import (nl.openweb.data ConfirmAccountCreation AccountCreationConfirmed AccountCreationFailed MoneyTransferFailed ConfirmMoneyTransfer MoneyTransferConfirmed BalanceChanged)
-           (org.apache.kafka.clients.consumer ConsumerRecord))
+  (:require [nl.openweb.command-handler.bank-command-handlers :as bank-command-handlers]
+            [nl.openweb.command-handler.bank-event-handlers :as bank-event-handlers]
+            [nl.openweb.command-handler.transfer-handlers :as transfer-handlers]
+            [nl.openweb.command-handler.user-command-handlers :as user-command-handlers]
+            [nl.openweb.command-handler.user-event-handlers :as user-event-handlers]
+            [nl.openweb.topology.clients :as clients])
+  (:import (org.apache.kafka.clients.producer KafkaProducer))
   (:gen-class))
 
-(def command-topic (or (System/getenv "KAFKA_COMMAND_TOPIC") "commands"))
-(def acf-topic (or (System/getenv "KAFKA_ACF_TOPIC") "account_creation_feedback"))
-(def mtf-topic (or (System/getenv "KAFKA_MTF_TOPIC") "money_transfer_feedback"))
-(def bc-topic (or (System/getenv "KAFKA_BC_TOPIC") "balance_changed"))
-(def client-id (or (System/getenv "KAFKA_CLIENT_ID") "command-handler"))
-
-(defn handle-cac
-  [producer key ^ConfirmAccountCreation value]
-  (let [result (db/get-account (-> (.getId value) .bytes vg/bytes->uuid) (.getUsername value))
-        feedback (if (:reason result)
-                   (AccountCreationFailed. (.getId value) (:reason result))
-                   (AccountCreationConfirmed. (.getId value) (:iban result) (:token result)))]
-    (clients/produce producer acf-topic key feedback)))
-
-(defn ->bc
-  [from ^ConfirmMoneyTransfer cmt balance-row]
-  (BalanceChanged.
-    (:balance/iban balance-row)
-    (:balance/amount balance-row)
-    (if from (- (.getAmount cmt)) (.getAmount cmt))
-    (if from (.getTo cmt) (.getFrom cmt))
-    (.getDescription cmt)))
-
-(defn handle-cmt
-  [producer key ^ConfirmMoneyTransfer value]
-  (let [result (db/transfer value)]
-    (if-let [from (:from result)]
-      (clients/produce producer bc-topic (:balance/username from) (->bc true value from)))
-    (if-let [to (:to result)]
-      (clients/produce producer bc-topic (:balance/username to) (->bc false value to)))
-    (if-let [reason (:reason result)]
-      (clients/produce producer mtf-topic key (MoneyTransferFailed. (.getId value) reason))
-      (clients/produce producer mtf-topic key (MoneyTransferConfirmed. (.getId value)))
-      )))
-
-(defn handle-all
-  [producer]
-  (fn [^ConsumerRecord record]
-    (let [key (.key record)
-          value (.value record)]
-      (condp instance? value
-        ConfirmAccountCreation (handle-cac producer key value)
-        ConfirmMoneyTransfer (handle-cmt producer key value))
-      )))
+(def app-id "command-handler")
 
 (defn -main
   []
-  (db/init)
-  (let [producer (clients/get-producer client-id)]
-    (clients/consume client-id client-id command-topic (handle-all producer))))
+  (let [^KafkaProducer producer (clients/get-producer app-id)]
+    (clients/consume-all-from-start app-id "user_events" user-event-handlers/handle-event)
+    (clients/consume-all-from-start app-id "bank_events" #(bank-event-handlers/handle-event producer %))
+    (clients/consume-part-from-now app-id "user_commands" #(user-command-handlers/handle-command producer %))
+    (clients/consume-part-from-now app-id "bank_commands" #(bank-command-handlers/handle-command producer %))
+    (clients/consume-all-from-now app-id "transfer_command_feedback" #(transfer-handlers/handle-feedback producer %))
+    (clients/consume-part-from-now app-id "transfer_commands" #(transfer-handlers/handle-command producer %))))
 

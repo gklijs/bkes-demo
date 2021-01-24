@@ -6,5 +6,5 @@ services:
       context: synchronizer
     container_name: synchronizer
     environment:
-      KAFKA_BROKERS: "kafka-1:19092,kafka-2:19094,kafka-3:19096"
+      KAFKA_BROKERS: "kafka:19092"
       SCHEMA_REGISTRY_URL: "http://schema-registry:8081"

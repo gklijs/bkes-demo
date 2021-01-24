@@ -5,7 +5,7 @@
                  [cljsjs/vega-lite "4.0.2-0" :exclusions [com.google.errorprone/error_prone_annotations com.google.code.findbugs/jsr305]]
                  [cljsjs/vega-embed "6.0.0-0" :exclusions [com.google.errorprone/error_prone_annotations com.google.code.findbugs/jsr305]]
                  [cljsjs/vega-tooltip "0.20.0-0" :exclusions [com.google.errorprone/error_prone_annotations com.google.code.findbugs/jsr305]]
-                 [org.clojure/clojure "1.10.1"]
+                 [org.clojure/clojure "1.10.2"]
                  [org.clojure/clojurescript "1.10.597" :exclusions [com.google.errorprone/error_prone_annotations com.google.code.findbugs/jsr305]]
                  [reagent "0.10.0"]
                  [re-frame "0.12.0"]

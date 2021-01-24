@@ -1,54 +1,48 @@
 (ns nl.openweb.graphql-endpoint.transaction-service
   (:require [com.stuartsierra.component :as component]
             [clojure.string :as string]
+            [clojure.tools.logging :as log]
             [clojurewerkz.money.amounts :as ma]
             [clojurewerkz.money.currencies :as cu]
             [clojurewerkz.money.format :as fo]
-            [next.jdbc :as j]
-            [next.jdbc.sql :as sql]
+            [nl.openweb.graphql-endpoint.query-bus :as query-bus]
+            [nl.openweb.graphql-endpoint.util :refer [new-id]]
             [nl.openweb.topology.clients :as clients])
-  (:import (nl.openweb.data BalanceChanged)
-           (java.util Locale)))
+  (:import (nl.openweb.data TransactionHappenedEvent TransactionByIdQuery AllLastTransactionsQuery TransactionsByIbanQuery)
+           (java.util Locale UUID)))
 
-(def bc-topic (or (System/getenv "KAFKA_BC_TOPIC") "balance_changed"))
-(def client-id (or (System/getenv "KAFKA_CLIENT_ID") "graphql-endpoint-transactions"))
+(def app-id "transaction-service")
 (def euro-c (cu/for-code "EUR"))
 (def dutch-locale (Locale. "nl" "NL"))
 
-(defn bc->sql-transaction
-  "id needs to be gotten from db and not class"
-  [^BalanceChanged bc]
-  (let [changed-by (.getChangedBy bc)]
-    {:iban        (.getIban bc)
-     :new_balance (fo/format (ma/amount-of euro-c (/ (.getNewBalance bc) 100)) dutch-locale)
+(defn the->graphql
+  [^TransactionHappenedEvent the]
+  (let [changed-by (.getChangedBy the)]
+    {:id          (.getTransactionId the)
+     :iban        (.getIban the)
+     :new_balance (fo/format (ma/amount-of euro-c (/ (.getNewBalance the) 100)) dutch-locale)
      :changed_by  (fo/format (ma/amount-of euro-c (/ (Math/abs changed-by) 100)) dutch-locale)
-     :from_to     (.getFromTo bc)
+     :from_to     (.getFromTo the)
      :direction   (if (< changed-by 0) "DEBIT" "CREDIT")
-     :descr       (.getDescription bc)}))
+     :descr       (.getDescription the)
+     :cbl         changed-by}))
 
-(defn sql-transaction->graphql-transaction
-  ([sql-map]
-   {:id          (:transaction/id sql-map)
-    :iban        (:transaction/iban sql-map)
-    :new_balance (:transaction/new_balance sql-map)
-    :changed_by  (:transaction/changed_by sql-map)
-    :from_to     (:transaction/from_to sql-map)
-    :direction   (:transaction/direction sql-map)
-    :descr       (:transaction/descr sql-map)})
-  ([sql-map changed-by-long]
-   (assoc (sql-transaction->graphql-transaction sql-map) :cbl changed-by-long)))
+(defn projector->graphql
+  [transaction]
+  (let [^long changed-by (:changed-by transaction)]
+    {:id          (:id transaction)
+     :iban        (:iban transaction)
+     :new_balance (fo/format (ma/amount-of euro-c (/ (:new-balance transaction) 100)) dutch-locale)
+     :changed_by  (fo/format (ma/amount-of euro-c (/ (Math/abs changed-by) 100)) dutch-locale)
+     :from_to     (:from-to transaction)
+     :direction   (if (< changed-by 0) "DEBIT" "CREDIT")
+     :descr       (:description transaction)
+     :cbl         changed-by}))
 
-(defn insert-transaction!
-  [datasource transaction]
-  (with-open [conn (j/get-connection datasource)]
-    (sql/insert! conn :transaction transaction)))
-
-(defn add-bc
-  [cr datasource subscriptions]
-  (let [^BalanceChanged bc (.value cr)
-        sql-transaction (bc->sql-transaction bc)
-        sql-map (insert-transaction! datasource sql-transaction)
-        graphql-transaction (sql-transaction->graphql-transaction sql-map (.getChangedBy bc))]
+(defn stream-the
+  [cr subscriptions]
+  (let [^TransactionHappenedEvent the (.value cr)
+        graphql-transaction (the->graphql the)]
     (doseq [[filter-f source-stream] (vals (:map @subscriptions))]
       (when (filter-f graphql-transaction)
         (source-stream graphql-transaction)))))
@@ -59,7 +53,7 @@
 
   (start [this]
     (let [subscriptions (atom {:id 0 :map {}})
-          stop-consume-f (clients/consume client-id client-id bc-topic #(add-bc % (get-in this [:db :datasource]) subscriptions))]
+          stop-consume-f (clients/consume-all-from-now app-id "transaction_events" #(stream-the % subscriptions))]
       (-> this
           (assoc :subscriptions subscriptions)
           (assoc :stop-consume stop-consume-f))))
@@ -76,25 +70,32 @@
   []
   {:transaction-service (-> {}
                             map->TransactionService
-                            (component/using [:db]))})
+                            (component/using [:query-bus]))})
 
 (defn find-transaction-by-id
   [db id]
-  (if-let [sql-transaction (with-open [conn (j/get-connection (get-in db [:db :datasource]))]
-                             (j/execute-one! conn ["SELECT * FROM transaction WHERE id = ?" id]))]
-    (sql-transaction->graphql-transaction sql-transaction)))
+  (let [query-feedback (query-bus/issue-query (:query-bus db) (TransactionByIdQuery. (new-id) id))]
+    (if
+      (string? query-feedback)
+      (log/warn "error getting transaction by id for id," id "with error," query-feedback)
+      (projector->graphql query-feedback))))
 
 (defn find-transactions-by-iban
   [db iban max-msg]
-  (if-let [sql-transactions (with-open [conn (j/get-connection (get-in db [:db :datasource]))]
-                              (j/execute! conn ["SELECT * FROM transaction WHERE iban = ? ORDER BY id DESC LIMIT ?" iban max-msg]))]
-    (map sql-transaction->graphql-transaction sql-transactions)))
+  (log/info db)
+  (let [query-feedback (query-bus/issue-query (:query-bus db) (TransactionsByIbanQuery. (new-id) iban max-msg))]
+    (if
+      (string? query-feedback)
+      (log/warn "error getting transactions by iban for iban," iban "with error," query-feedback)
+      (map projector->graphql query-feedback))))
 
 (defn find-all-last-transactions
   [db]
-  (if-let [sql-transactions (with-open [conn (j/get-connection (get-in db [:db :datasource]))]
-                              (j/execute! conn ["SELECT * FROM transaction WHERE id IN (SELECT MAX(id) FROM transaction GROUP BY iban) ORDER BY iban"]))]
-    (map sql-transaction->graphql-transaction sql-transactions)))
+  (let [query-feedback (query-bus/issue-query (:query-bus db) (AllLastTransactionsQuery. (new-id)))]
+    (if
+      (string? query-feedback)
+      (log/warn "error getting all last transactions, error," query-feedback)
+      (map projector->graphql query-feedback))))
 
 (defn add-stream
   [subscriptions filter-f source-stream]
@@ -116,12 +117,12 @@
 (defn filter-function
   [args]
   (let [{:keys [iban min_amount max_amount direction descr_includes]} args
-        premises []
-        premises (optionally-add-premise premises iban #(= %1 (:iban %2)))
-        premises (optionally-add-premise premises min_amount #(<= %1 (:cbl %2)))
-        premises (optionally-add-premise premises max_amount #(>= %1 (:cbl %2)))
-        premises (optionally-add-premise premises direction #(= %1 (:direction %2)))
-        premises (optionally-add-premise premises descr_includes #(includes? (:desc %2) %1))]
+        premises (-> []
+                     (optionally-add-premise iban #(= %1 (:iban %2)))
+                     (optionally-add-premise min_amount #(<= %1 (:cbl %2)))
+                     (optionally-add-premise max_amount #(>= %1 (:cbl %2)))
+                     (optionally-add-premise direction #(= %1 (:direction %2)))
+                     (optionally-add-premise descr_includes #(includes? (:desc %2) %1)))]
     (fn [bc-map] (every? #(% bc-map) premises))))
 
 (defn create-transaction-subscription

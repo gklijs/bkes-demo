@@ -12,8 +12,7 @@
   (bidi/match-route routes url))
 
 (defn- dispatch-route [matched-route]
-  (let [handler (:handler matched-route)
-        params (:route-params matched-route)]
+  (let [handler (:handler matched-route)]
     (re-frame/dispatch [::events/set-selected-nav handler])))
 
 (defn app-routes []

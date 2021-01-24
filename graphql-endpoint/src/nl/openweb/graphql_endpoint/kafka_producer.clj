@@ -3,14 +3,14 @@
             [nl.openweb.topology.clients :as clients])
   (:import (org.apache.kafka.clients.producer KafkaProducer)))
 
-(def client-id (or (System/getenv "KAFKA_CLIENT_ID") "graphql-endpoint-producer"))
+(def app-id "graphql-endpoint-producer")
 
 (defrecord KafkaProducerWrapper []
 
   component/Lifecycle
 
   (start [this]
-    (let [^KafkaProducer producer (clients/get-producer client-id)]
+    (let [^KafkaProducer producer (clients/get-producer app-id)]
       (assoc this :producer producer)))
 
   (stop [this]

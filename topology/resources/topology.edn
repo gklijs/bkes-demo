@@ -1,7 +1,21 @@
 {"_schemas"                    [1 3 nil {:cleanup.policy "compact"}]
  "__confluent.support.metrics" [1 3 nil {}]
  "_confluent-metrics"          [1 3 nil {}]
- "commands"                    [24 3 [:ConfirmAccountCreation :ConfirmMoneyTransfer] {:retention.ms -1}]
- "account_creation_feedback"   [24 3 [:AccountCreationConfirmed :AccountCreationFailed] {:retention.ms -1}]
- "money_transfer_feedback"     [24 3 [:MoneyTransferConfirmed :MoneyTransferFailed] {:retention.ms -1}]
- "balance_changed"             [24 3 [:BalanceChanged] {:retention.ms -1}]}
+ "user_events"                 [1 3 [:UserAccountCreatedEvent] {:retention.ms -1}]
+ "bank_events"                 [1 3 [:BankAccountCreatedEvent :MoneyCreditedEvent :MoneyDebitedEvent :MoneyReturnedEvent
+                                     :TransferCompletedEvent :TransferFailedEvent :TransferStartedEvent
+                                     :UserAddedToBankAccountEvent :UserRemovedFromBankAccountEvent] {:retention.ms -1}]
+ "user_commands"               [24 3 [:CreateUserAccountCommand] {:retention.ms 60000}]
+ "bank_commands"               [24 3 [:AddUserToBankAccountCommand :CreateBankAccountCommand :MarkTransferCompletedCommand
+                                      :MarkTransferFailedCommand :MoneyTransferCommand :RemoveUserFromBankAccountCommand]
+                                {:retention.ms 60000}]
+ "transfer_commands"           [24 3 [:CreditMoneyCommand :DebitMoneyCommand :ReturnMoneyCommand] {:retention.ms 60000}]
+ "user_command_feedback"       [24 3 [:CommandSucceeded :CommandFailed] {:retention.ms 60000}]
+ "bank_command_feedback"       [24 3 [:CommandSucceeded :CommandFailed] {:retention.ms 60000}]
+ "transfer_command_feedback"   [24 3 [:CommandSucceeded :CommandFailed] {:retention.ms 60000}]
+ "bank_queries"                [24 3 [:AllLastTransactionsQuery :FindBankAccountQuery :FindBankAccountsForUserQuery
+                                      :TransactionByIdQuery :TransactionsByIbanQuery] {:retention.ms 60000}]
+ "user_queries"                [24 3 [:FindUserQuery] {:retention.ms 60000}]
+ "bank_queries_feedback"       [24 3 [:QuerySucceeded :QueryFailed] {:retention.ms 60000}]
+ "user_queries_feedback"       [24 3 [:QuerySucceeded :QueryFailed] {:retention.ms 60000}]
+ "transaction_events"          [24 3 [:TransactionHappenedEvent] {:retention.ms 60000}]}

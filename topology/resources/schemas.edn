@@ -1,14 +1,42 @@
-{:records {:ConfirmAccountCreation   [:id :username]
-           :AccountCreationConfirmed [:id :iban :token]
-           :AccountCreationFailed    [:id :reason]
-           :ConfirmMoneyTransfer     [:id :token :amount {:name "from" :type :string} {:name "to" :type :string} :description]
-           :MoneyTransferConfirmed   [:id]
-           :MoneyTransferFailed      [:id :reason]
-           :BalanceChanged           [:iban {:name "new-balance" :type :long} {:name "changed-by" :type :long} {:name "from-to" :type :string} :description]}
- :types   {:id          {:name "Uuid" :type :fixed :size 16}
-           :username    :string
-           :reason      :string
-           :iban        :string
-           :token       :string
-           :amount      :long
-           :description :string}}
+{:commands       {:AddUserToBankAccountCommand      [:iban :username :token {:name "user-to-add" :type :string}]
+                  :CreateBankAccountCommand         [:iban :username]
+                  :CreditMoneyCommand               [:iban :amount]
+                  :DebitMoneyCommand                [:iban :amount :token :username]
+                  :MarkTransferCompletedCommand     []
+                  :MarkTransferFailedCommand        [:reason]
+                  :MoneyTransferCommand             [:token :amount :from :to :description :username]
+                  :RemoveUserFromBankAccountCommand [:iban :username :token]
+                  :ReturnMoneyCommand               [:iban :amount :reason]
+                  :CreateUserAccountCommand         [:username :password]}
+ :queries        {:FindUserQuery                [:username]
+                  :AllLastTransactionsQuery     []
+                  :FindBankAccountQuery         [:iban]
+                  :FindBankAccountsForUserQuery [:username]
+                  :TransactionByIdQuery         [:transaction-id]
+                  :TransactionsByIbanQuery      [:iban {:name "max-items" :type :int}]}
+ :feedback       {:CommandSucceeded [:command-name]
+                  :CommandFailed    [:command-name :reason]
+                  :QuerySucceeded   [:query-name {:name "query-result" :type :string :doc "The EDN formatted result"}]
+                  :QueryFailed      [:query-name :reason]}
+ :events         {:BankAccountCreatedEvent         [:iban :token :username]
+                  :MoneyCreditedEvent              [:iban :amount :id]
+                  :MoneyDebitedEvent               [:iban :amount :id]
+                  :MoneyReturnedEvent              [:iban :amount :id :reason]
+                  :TransferStartedEvent            [:id :token :amount :from :to :description :username]
+                  :TransferCompletedEvent          [:id]
+                  :TransferFailedEvent             [:id :reason]
+                  :UserAddedToBankAccountEvent     [:username :iban :token]
+                  :UserRemovedFromBankAccountEvent [:username :iban]
+                  :UserAccountCreatedEvent         [:username :password]}
+ :derived-events {:TransactionHappenedEvent [:transaction-id :iban {:name "new-balance" :type :long} {:name "changed-by" :type :long} {:name "from-to" :type :string} :description]}
+ :types          {:id             {:name "Id" :type :fixed :size 16}
+                  :transaction-id :int
+                  :username       :string
+                  :password       :string
+                  :reason         :string
+                  :iban           :string
+                  :token          :string
+                  :from           :string
+                  :to             :string
+                  :amount         :long
+                  :description    :string}}

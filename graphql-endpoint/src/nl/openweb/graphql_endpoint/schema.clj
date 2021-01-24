@@ -26,6 +26,17 @@
   (fn [_ _ _]
     (transaction-service/find-all-last-transactions transaction-service)))
 
+(defn get-account
+  [account-creation-service]
+  (fn [_ args _]
+    (account-creation-service/get-account account-creation-service (:username args) (:password args))))
+
+(defn money-transfer
+  [money-transfer-service]
+  (fn [_ args _]
+    (log/debug "starting make money transfer subscription with args:" args)
+    (money-transfer-service/money-transfer money-transfer-service args)))
+
 (defn stream-transactions
   [transaction-service]
   (fn [_ args source-stream]
@@ -35,36 +46,22 @@
       ;; Return a function to cleanup the subscription
       #(transaction-service/stop-transaction-subscription transaction-service id))))
 
-(defn get-account
-  [account-creation-service]
-  (fn [_ args source-stream]
-    (let [id (account-creation-service/get-account account-creation-service source-stream (:username args) (:password args))]
-      #(account-creation-service/stop-transaction-subscription account-creation-service id))))
-
-(defn money-transfer
-  [money-transfer-service]
-  (fn [_ args source-stream]
-    (log/debug "starting make money transfer subscription with args:" args)
-    (let [id (money-transfer-service/money-transfer money-transfer-service source-stream args)]
-      #(money-transfer-service/stop-transaction-subscription money-transfer-service id))))
-
 (defn resolver-map
-  [component]
-  (let [transaction-service (:transaction-service component)]
-    {:query/transaction-by-id     (transaction-by-id transaction-service )
-     :query/transactions-by-iban  (transactions-by-iban transaction-service )
-     :query/all-last-transactions (all-last-transactions transaction-service )
-     }))
-
-(defn stream-map
   [component]
   (let [transaction-service (:transaction-service component)
         account-creation-service (:account-creation-service component)
         money-transfer-service (:money-transfer-service component)]
-    {:stream-transactions (stream-transactions transaction-service)
-     :get-account (get-account account-creation-service)
-     :money-transfer (money-transfer money-transfer-service)
+    {:query/transaction-by-id     (transaction-by-id transaction-service )
+     :query/transactions-by-iban  (transactions-by-iban transaction-service )
+     :query/all-last-transactions (all-last-transactions transaction-service )
+     :mutation/get-account (get-account account-creation-service)
+     :mutation/money-transfer (money-transfer money-transfer-service)
      }))
+
+(defn stream-map
+  [component]
+  (let [transaction-service (:transaction-service component)]
+    {:stream-transactions (stream-transactions transaction-service)}))
 
 (defn load-schema
   [component]

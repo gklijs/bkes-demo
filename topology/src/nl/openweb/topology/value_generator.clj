@@ -34,3 +34,7 @@
         high (.getLong bb)
         low (.getLong bb)]
     (UUID. high low)))
+
+(defn identifier->string
+  [identifier]
+  (.toString (.bytes identifier)))

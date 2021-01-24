@@ -1,10 +1,20 @@
-# Apache Kafka with GraphQL examples
+# BOB 2021 - Event in, events out?
 
-This project is all about experimenting with Kafka and GraphQL. The frontend is deployed [here](https://graphql.gklijs.tech/results/linger-ms-config/average-latency) without a working backend but does contain some results from running tests..
+---
+**Readme will be updated and the project probably a bit as well before the tutorial**
 
-[![Presentation at GraphQL Summit 2019](http://img.youtube.com/vi/EN73NiR8xZI/0.jpg)](http://www.youtube.com/watch?v=EN73NiR8xZI "Using Kafka with GraphQL")
+Major rewrite from [kafka-graphql-examples](https://github.com/openweb-nl/kafka-graphql-examples), improving on the event sourcing and cqrs part is mostly done.
+Todo is updating the docs, and have some assignments for the tutorial.
 
-[![Build Status](https://travis-ci.com/openweb-nl/kafka-graphql-examples.svg?branch=master)](https://travis-ci.com/openweb-nl/kafka-graphql-examples)
+---
+
+Using event sourcing strategies can be a nice way to enable some decoupling. However when interacting with external systems one should watch out how much of the internal objects leak through to the api.
+
+Event sourcing is an architecture that brings a couple of benefits compared to crud applications. It becomes easier to model complex domains. Also because events are the only way to change data, and the events are always stored, there is a clear audit trail.
+
+Using GraphQL for the api enables streaming which could be very nice when working with events. But it also allows you to design specific types, and even gracefully deprecate when needed.
+
+We will work on example which is easy to setup with docker, and continue to make modifications to the model to add new features.
 
 ## Summary
 
@@ -244,8 +254,6 @@ If you run into CORS trouble localy you may need to add the specific port you us
 
 There are several scripts to automate things. They are placed at the root level.
 * `clean.sh` stops and removes all used Docker container, it does not throw away the images
-* `create-certs.sh` is used to create a docker volume with the needed certs/secrets.
 * `prepare.sh` is needed the first time before `restart.sh` can be used. It will get all the dependencies and build jar's. It needs leiningen, maven, sassc to be installed. As last step it will (re)build the docker images.
-* `restart.sh` is used to stop and start the whole setup, it does not start a test. When it's finished the application should be accessible at port 8181. 
-* `setup-db-ch.sh` and `setup-db-ge.sh` are used to setup the database. It takes the name of the Docker container to execute it on as the first argument and the port used as the second. When running a local PostgreSQL you could copy parts of it to create the users, tables and indexes.
+* `restart.sh` is used to stop and start the whole setup, it does not start a test. Once it's finished the application should be accessible at port 8181.
 * `synchronize.sh` is used as part of the restart to set both the Kafka topics and schema's in the schema registry.

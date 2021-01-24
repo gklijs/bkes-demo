@@ -10,11 +10,6 @@
     db/default-db))
 
 (re-frame/reg-event-db
-  ::on-transaction
-  (fn [db [_ {:keys [data _] :as _}]]
-    (assoc db :last-transaction data)))
-
-(re-frame/reg-event-db
   ::set-all-accounts
   (fn [db [_ {:keys [data _] :as _}]]
     (assoc db :all-accounts {:accounts (:all_last_transactions data) :page 1})))
@@ -81,6 +76,16 @@
   (fn [db _]
     (assoc db :transactions nil)))
 
+(re-frame/reg-event-db
+  ::on-get-account
+  (fn [db [_ {:keys [data _] :as _}]]
+    (update db :login-status #(merge % (:get_account data)))))
+
+(re-frame/reg-event-db
+  ::on-deposit
+  (fn [db [_ {:keys [data _] :as _}]]
+    (assoc db :deposit-data (:money_transfer data))))
+
 (re-frame/reg-event-fx
   ::set-max-items
   (fn [cofx [_ m-i]]
@@ -106,30 +111,15 @@
   ::get-account
   (fn [cofx [_ username password]]
     {:db       (assoc-in (:db cofx) [:login-status :username] username)
-     :dispatch [::re-graph/subscribe
-                :get-account
+     :dispatch [::re-graph/mutate
                 "($username: String! $password: String!){get_account(username: $username password: $password) {reason iban token}}"
                 {:username username :password password}
                 [::on-get-account]]}))
 
-(re-frame/reg-event-fx
-  ::on-get-account
-  (fn [cofx [_ {:keys [data _] :as _}]]
-    (let [new-db (update (:db cofx) :login-status #(merge % (:get_account data)))]
-      {:db         new-db
-       :dispatch-n (conj (get-dispatches new-db) [::re-graph/unsubscribe :get-account])})))
-
-(re-frame/reg-event-fx
-  ::on-deposit
-  (fn [cofx [_ {:keys [data _] :as _}]]
-    {:db       (assoc (:db cofx) :deposit-data (:money_transfer data))
-     :dispatch [::re-graph/unsubscribe (keyword (str "deposit-" (:uuid (:money_transfer data))))]}))
-
-(re-frame/reg-event-fx
+(re-frame/reg-event-db
   ::on-transfer
-  (fn [cofx [_ {:keys [data _] :as _}]]
-    {:db       (update (:db cofx) :transfer-data #(merge % (:money_transfer data)))
-     :dispatch [::re-graph/unsubscribe (keyword (str "transfer-" (:uuid (:money_transfer data))))]}))
+  (fn [db [_ {:keys [data _] :as _}]]
+    (update db :transfer-data #(merge % (:money_transfer data)))))
 
 (re-frame/reg-event-db
   ::check-valid-login-form

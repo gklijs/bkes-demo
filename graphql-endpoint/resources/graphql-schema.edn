@@ -46,22 +46,8 @@
    :description "Get last transaction of all active iban."
    :resolve     :query/all-last-transactions}
   }
- :subscriptions
+ :mutations
  {
-  :stream_transactions
-  {:type        :Transaction
-   :description "Get transactions as they happen, with optional filtering"
-   :args        {:iban           {:type        String
-                                  :description "optional filter on matching iban"}
-                 :min_amount     {:type        Int
-                                  :description "optional filter based on transferred amount"}
-                 :max_amount     {:type        Int
-                                  :description "optional filter based on transferred amount"}
-                 :direction      {:type        :dtype
-                                  :description "optional filter on DEBIT or CREDIT"}
-                 :descr_includes {:type        String
-                                  :description "optional filter on containing in description"}}
-   :stream      :stream-transactions}
   :get_account
   {:type        :AccountResult
    :description "Get the result of account creation, account may be just created or already exist"
@@ -69,7 +55,7 @@
                             :description "The username used to log in some other time"}
                  :password {:type        (non-null String)
                             :description "Password needed to log in some other time"}}
-   :stream      :get-account}
+   :resolve     :mutation/get-account}
   :money_transfer
   {:type        :MoneyTransferResult
    :description "Try to make a money transfer"
@@ -87,4 +73,21 @@
                             :description "The iban of the account the money is credited"}
                  :descr    {:type        (non-null String)
                             :description "The description of the money transfer"}}
-   :stream      :money-transfer}}}
+   :resolve     :mutation/money-transfer}
+  }
+ :subscriptions
+ {
+  :stream_transactions
+  {:type        :Transaction
+   :description "Get transactions as they happen, with optional filtering"
+   :args        {:iban           {:type        String
+                                  :description "optional filter on matching iban"}
+                 :min_amount     {:type        Int
+                                  :description "optional filter based on transferred amount"}
+                 :max_amount     {:type        Int
+                                  :description "optional filter based on transferred amount"}
+                 :direction      {:type        :dtype
+                                  :description "optional filter on DEBIT or CREDIT"}
+                 :descr_includes {:type        String
+                                  :description "optional filter on containing in description"}}
+   :stream      :stream-transactions}}}

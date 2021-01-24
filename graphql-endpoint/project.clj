@@ -4,12 +4,9 @@
                  [crypto-password "0.2.1"]
                  [com.stuartsierra/component "0.4.0"]
                  [com.walmartlabs/lacinia-pedestal "0.12.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [hikari-cp/hikari-cp :version]
                  [nl.openweb/topology :version]
                  [org.clojure/clojure :version]
-                 [org.postgresql/postgresql :version]
-                 [org.slf4j/slf4j-api "2.0.0-alpha1"]
-                 [seancorfield/next.jdbc :version]]
+                 [org.slf4j/slf4j-api "2.0.0-alpha1"]]
   :main nl.openweb.graphql-endpoint.core
   :profiles {:uberjar {:omit-source  true
                        :aot          [nl.openweb.graphql-endpoint.core]

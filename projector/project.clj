@@ -1,4 +1,4 @@
-(defproject nl.openweb/command-handler "0.1.0-SNAPSHOT"
+(defproject nl.openweb/projector "0.1.0-SNAPSHOT"
   :description "FIXME: write description"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -6,7 +6,7 @@
   :plugins [[lein-modules "0.3.11"]]
   :dependencies [[nl.openweb/topology :version]
                  [org.clojure/clojure :version]]
-  :main nl.openweb.command-handler.core
+  :main nl.openweb.projector.core
   :profiles {:uberjar {:omit-source  true
                        :aot          :all
-                       :uberjar-name "ch-docker.jar"}})
+                       :uberjar-name "projector-docker.jar"}})
