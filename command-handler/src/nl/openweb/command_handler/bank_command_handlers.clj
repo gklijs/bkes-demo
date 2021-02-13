@@ -48,7 +48,7 @@
             (if-let [transfer (db/get-from-db :bank-transfers (.getId command))]
               (if
                 (= (:state transfer) :started)
-                (TransferFailedEvent. (.getId command) (.getReason command))
+                [(.getReason command) (TransferFailedEvent. (.getId command) (.getReason command))]
                 (str "state of transfer was " (name (:state transfer)) " so could not be failed"))
               "transfer not known")))
 

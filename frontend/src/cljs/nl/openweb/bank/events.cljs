@@ -76,10 +76,12 @@
   (fn [db _]
     (assoc db :transactions nil)))
 
-(re-frame/reg-event-db
+(re-frame/reg-event-fx
   ::on-get-account
-  (fn [db [_ {:keys [data _] :as _}]]
-    (update db :login-status #(merge % (:get_account data)))))
+  (fn [cofx [_ {:keys [data _] :as _}]]
+    (let [new-db (update (:db cofx) :login-status #(merge % (:get_account data)))]
+      {:db         new-db
+       :dispatch-n (get-dispatches new-db)})))
 
 (re-frame/reg-event-db
   ::on-deposit
