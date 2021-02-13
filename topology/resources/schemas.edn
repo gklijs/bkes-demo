@@ -14,7 +14,7 @@
                   :FindBankAccountsForUserQuery [:username]
                   :TransactionByIdQuery         [:transaction-id]
                   :TransactionsByIbanQuery      [:iban {:name "max-items" :type :int}]}
- :feedback       {:CommandSucceeded [:command-name]
+ :feedback       {:CommandSucceeded [:command-name {:name "additional-info" :type [:string :null] :default :null}]
                   :CommandFailed    [:command-name :reason]
                   :QuerySucceeded   [:query-name {:name "query-result" :type :string :doc "The EDN formatted result"}]
                   :QueryFailed      [:query-name :reason]}

@@ -2,9 +2,10 @@
   (:require [com.stuartsierra.component :as component]
             [nl.openweb.topology.clients :as clients]
             [nl.openweb.topology.value-generator :as vg])
-  (:import (nl.openweb.data CreateUserAccountCommand CommandSucceeded)))
+  (:import (nl.openweb.data CreateUserAccountCommand CommandSucceeded CommandName CommandFailed)))
 
 (def app-id "command-bus")
+(def sagas #{CommandName/MoneyTransferCommand})
 
 (defn issue-command
   [db command]
@@ -23,10 +24,11 @@
 (defn resolve-promise-if-present
   [promise-map command-feedback]
   (if-let [p (get @promise-map (.getId command-feedback))]
-    (if
-      (instance? CommandSucceeded command-feedback)
-      (deliver p true)
-      (deliver p (.getReason command-feedback)))))
+    (cond
+      (instance? CommandFailed command-feedback) (deliver p (.getReason command-feedback))
+      (sagas (.getCommandName command-feedback)) true
+      (.getAdditionalInfo command-feedback) (deliver p (.getAdditionalInfo command-feedback))
+      :else (deliver p true))))
 
 (defrecord CommandBus []
 
@@ -43,8 +45,7 @@
           (assoc :user-promise-map user-promise-map)
           (assoc :bank-promise-map bank-promise-map)
           (assoc :stop-user-f stop-user-f)
-          (assoc :stop-bank-f stop-bank-f)
-          )))
+          (assoc :stop-bank-f stop-bank-f))))
 
   (stop [this]
     ((:stop-user-f this))

@@ -10,6 +10,12 @@
            (org.apache.kafka.clients.producer KafkaProducer)
            (org.apache.kafka.clients.consumer ConsumerRecord)))
 
+(defn invalid-from
+  [from]
+  (cond
+    (= from "cash") false
+    :else (not (vg/valid-open-iban from))))
+
 (defn handle-transfer-started
   [^KafkaProducer producer ^TransferStartedEvent event]
   (if (db/get-from-db :bank-transfers-running (.getId event))
@@ -24,7 +30,7 @@
                                                        :debited     false})
           [topic key command] (cond
                                 (= (.getFrom event) (.getTo event)) ["bank_commands" id-s (MarkTransferFailedCommand. id "from and to can't be same for transfer")]
-                                (vg/valid-open-iban (.getFrom event)) ["bank_commands" id-s (MarkTransferFailedCommand. id "from is invalid")]
+                                (invalid-from (.getFrom event)) ["bank_commands" id-s (MarkTransferFailedCommand. id "from is invalid")]
                                 (= (.getFrom event) "cash") ["transfer_commands" (.getTo event) (CreditMoneyCommand. id (.getTo event) (.getAmount event))]
                                 :else ["transfer_commands" (.getFrom event) (DebitMoneyCommand. id (.getFrom event) (.getAmount event) (.getToken event) (.getUsername event))])]
       (clients/produce producer topic key command))))
@@ -48,7 +54,7 @@
   [^KafkaProducer producer ^DebitMoneyCommand command]
   (feedback producer command
             (if-let [account (db/get-from-db :bank-accounts (.getIban command))]
-              (if-let [token (get (:users account) (.getUsername command))]
+              (if-let [token (get-in account [:users (.getUsername command)])]
                 (if (= token (.getToken command))
                   (if (> (- (:balance account) (.getAmount command)) (:limit account))
                     (MoneyDebitedEvent. (.getIban command) (.getAmount command) (.getId command))

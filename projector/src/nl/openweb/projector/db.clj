@@ -40,11 +40,11 @@
 
 (defn get-all-last-transactions
   []
-  (->> (into (sorted-map) @transactions-by-iban)
+  (->> @transactions-by-iban
+       (sort-by first)
        vals
        (remove empty?)
-       (map last)
-       vec))
+       (mapv last)))
 
 (defn add-iban-for-user!
   [user iban]
