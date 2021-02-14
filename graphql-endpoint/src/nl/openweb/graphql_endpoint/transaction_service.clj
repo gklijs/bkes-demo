@@ -9,7 +9,7 @@
             [nl.openweb.graphql-endpoint.util :refer [new-id]]
             [nl.openweb.topology.clients :as clients])
   (:import (nl.openweb.data TransactionHappenedEvent TransactionByIdQuery AllLastTransactionsQuery TransactionsByIbanQuery)
-           (java.util Locale UUID)))
+           (java.util Locale)))
 
 (def app-id "transaction-service")
 (def euro-c (cu/for-code "EUR"))
@@ -76,26 +76,26 @@
   [db id]
   (let [query-feedback (query-bus/issue-query (:query-bus db) (TransactionByIdQuery. (new-id) id))]
     (if
-      (string? query-feedback)
-      (log/warn "error getting transaction by id for id," id "with error," query-feedback)
-      (projector->graphql query-feedback))))
+      (:failure query-feedback)
+      (log/warn "error getting transaction by id for id," id "with error," (:reason query-feedback))
+      (projector->graphql (:result query-feedback)))))
 
 (defn find-transactions-by-iban
   [db iban max-msg]
   (log/info db)
   (let [query-feedback (query-bus/issue-query (:query-bus db) (TransactionsByIbanQuery. (new-id) iban max-msg))]
     (if
-      (string? query-feedback)
-      (log/warn "error getting transactions by iban for iban," iban "with error," query-feedback)
-      (map projector->graphql query-feedback))))
+      (:failure query-feedback)
+      (log/warn "error getting transactions by iban for iban," iban "with error," (:reason query-feedback))
+      (map projector->graphql (:result query-feedback)))))
 
 (defn find-all-last-transactions
   [db]
   (let [query-feedback (query-bus/issue-query (:query-bus db) (AllLastTransactionsQuery. (new-id)))]
     (if
-      (string? query-feedback)
-      (log/warn "error getting all last transactions, error," query-feedback)
-      (map projector->graphql query-feedback))))
+      (:failure query-feedback)
+      (log/warn "error getting all last transactions, error," (:reason query-feedback))
+      (map projector->graphql (:result query-feedback)))))
 
 (defn add-stream
   [subscriptions filter-f source-stream]

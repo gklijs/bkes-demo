@@ -10,7 +10,7 @@
   (let [id (new-id)
         cb (:command-bus db)
         command-feedback (command-bus/issue-command cb (CreateBankAccountCommand. id "NL66OPEN0000000000" "openweb"))]
-    (if (str/starts-with? command-feedback "token:")
+    (if (:success command-feedback)
       (command-bus/issue-command cb (MoneyTransferCommand.
                                       id
                                       "cash"

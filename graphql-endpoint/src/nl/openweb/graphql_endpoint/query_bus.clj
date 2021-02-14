@@ -3,9 +3,14 @@
             [com.stuartsierra.component :as component]
             [nl.openweb.topology.clients :as clients]
             [nl.openweb.topology.value-generator :as vg])
-  (:import (nl.openweb.data FindUserQuery QuerySucceeded)))
+  (:import (nl.openweb.data FindUserQuery QuerySucceeded QueryFailed)))
 
 (def app-id "query-bus")
+(def time-out-value 1000)
+(def time-out-default
+  {:failure   true
+   :timed-out true
+   :reason    (str "timed out after " time-out-value " ms")})
 
 (defn issue-query
   [db query]
@@ -17,7 +22,7 @@
         id (.getId query)]
     (swap! promise-map assoc id promise)
     (clients/produce (get-in db [:kafka-producer :producer]) query-topic key query)
-    (let [result (deref promise 1000 "timeout")]
+    (let [result (deref promise time-out-value time-out-default)]
       (swap! promise-map dissoc id)
       result)))
 
@@ -28,6 +33,16 @@
       (instance? QuerySucceeded query-feedback)
       (deliver p (edn/read-string (.getQueryResult query-feedback)))
       (deliver p (.getReason query-feedback)))))
+
+(defn resolve-promise-if-present
+  [promise-map query-feedback]
+  (if-let [p (get @promise-map (.getId query-feedback))]
+    (if
+      (instance? QueryFailed query-feedback)
+      (deliver p {:failure true
+                  :reason  (.getReason query-feedback)})
+      (deliver p {:success true
+                  :result  (edn/read-string (.getQueryResult query-feedback))}))))
 
 (defrecord QueryBus []
 

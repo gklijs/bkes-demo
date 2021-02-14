@@ -31,7 +31,7 @@
               (not (vg/valid-open-iban (.getIban command))) "invalid open iban"
               (db/get-from-db :bank-accounts (.getIban command)) "iban already exist"
               :else (let [token (vg/new-token)]
-                      [(str "token:" token) (BankAccountCreatedEvent. (.getIban command) token (.getUsername command))]))))
+                      [token (BankAccountCreatedEvent. (.getIban command) token (.getUsername command))]))))
 
 (defn handle-complete-transfer
   [^KafkaProducer producer ^MarkTransferCompletedCommand command]

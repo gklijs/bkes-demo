@@ -2,10 +2,17 @@
   (:require [com.stuartsierra.component :as component]
             [nl.openweb.topology.clients :as clients]
             [nl.openweb.topology.value-generator :as vg])
-  (:import (nl.openweb.data CreateUserAccountCommand CommandSucceeded CommandName CommandFailed)))
+  (:import (nl.openweb.data CreateUserAccountCommand CommandName CommandFailed)))
 
 (def app-id "command-bus")
-(def sagas #{CommandName/MoneyTransferCommand})
+(def saga-failed #{CommandName/MarkTransferFailedCommand})
+(def saga-started #{CommandName/MoneyTransferCommand})
+
+(def time-out-value 1000)
+(def time-out-default
+  {:failure   true
+   :timed-out true
+   :reason    (str "timed out after " time-out-value " ms")})
 
 (defn issue-command
   [db command]
@@ -17,7 +24,7 @@
         id (.getId command)]
     (swap! promise-map assoc id promise)
     (clients/produce (get-in db [:kafka-producer :producer]) query-topic key command)
-    (let [result (deref promise 1000 "timeout")]
+    (let [result (deref promise time-out-value time-out-default)]
       (swap! promise-map dissoc id)
       result)))
 
@@ -25,10 +32,19 @@
   [promise-map command-feedback]
   (if-let [p (get @promise-map (.getId command-feedback))]
     (cond
-      (instance? CommandFailed command-feedback) (deliver p (.getReason command-feedback))
-      (sagas (.getCommandName command-feedback)) true
-      (.getAdditionalInfo command-feedback) (deliver p (.getAdditionalInfo command-feedback))
-      :else (deliver p true))))
+      (instance? CommandFailed command-feedback)
+      (deliver p {:failure true
+                  :reason  (.getReason command-feedback)})
+      (saga-started (.getCommandName command-feedback))
+      true
+      (saga-failed (.getCommandName command-feedback))
+      (deliver p {:failure true
+                  :reason  (.getAdditionalInfo command-feedback)})
+      (.getAdditionalInfo command-feedback)
+      (deliver p {:success         true
+                  :additional-info (.getAdditionalInfo command-feedback)})
+      :else
+      (deliver p {:success true}))))
 
 (defrecord CommandBus []
 

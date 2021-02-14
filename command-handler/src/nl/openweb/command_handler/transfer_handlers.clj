@@ -1,5 +1,8 @@
 (ns nl.openweb.command-handler.transfer-handlers
-  (:require [nl.openweb.command-handler.db :as db]
+  (:require [clojurewerkz.money.amounts :as ma]
+            [clojurewerkz.money.currencies :as cu]
+            [clojurewerkz.money.format :as fo]
+            [nl.openweb.command-handler.db :as db]
             [nl.openweb.topology.clients :as clients]
             [nl.openweb.topology.value-generator :as vg]
             [nl.openweb.command-handler.command-util :as command-util])
@@ -49,6 +52,8 @@
   (remove-active-if-present (.getId event)))
 
 (def feedback (command-util/feedback-function "transfer_command_feedback" "bank_events"))
+(def euro-c (cu/for-code "EUR"))
+(def dutch-locale (Locale. "nl" "NL"))
 
 (defn handle-debit-money
   [^KafkaProducer producer ^DebitMoneyCommand command]
@@ -58,7 +63,7 @@
                 (if (= token (.getToken command))
                   (if (> (- (:balance account) (.getAmount command)) (:limit account))
                     (MoneyDebitedEvent. (.getIban command) (.getAmount command) (.getId command))
-                    (str "insufficient funds would be below the limit of " (:limit account)))
+                    (str "insufficient funds would be below the limit of " (fo/format (ma/amount-of euro-c (/ (:limit account) 100)) dutch-locale)))
                   "token is not valid")
                 "user is no owner of bank account")
               "iban not known")))

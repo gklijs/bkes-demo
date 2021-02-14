@@ -25,10 +25,10 @@
           uuid (UUID/fromString uuid-arg)
           command (create-money-transfer uuid args)
           command-feedback (command-bus/issue-command (:command-bus db) command)]
-      (if (string? command-feedback)
+      (if (:failure command-feedback)
         {:uuid    uuid-arg
          :success false
-         :reason  command-feedback}
+         :reason  (:reason command-feedback)}
         {:uuid    uuid-arg
          :success true
          :reason  nil}))

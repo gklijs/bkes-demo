@@ -7,25 +7,26 @@
             [nl.openweb.graphql-endpoint.util :refer [new-id]]
             [nl.openweb.topology.value-generator :refer [bytes->uuid]]
             [nl.openweb.topology.value-generator :as vg])
-  (:import (nl.openweb.data FindUserQuery CreateUserAccountCommand CreateBankAccountCommand FindBankAccountsForUserQuery
-                            FindBankAccountQuery)))
+  (:import (nl.openweb.data FindUserQuery CreateUserAccountCommand CreateBankAccountCommand
+                            FindBankAccountsForUserQuery)))
 
 (defn- error
-  [reason]
+  [feedback]
   {:iban   nil
    :token  nil
-   :reason reason})
+   :reason (:reason feedback)})
 
 (defn- success
-  [bank-account username]
-  {:iban   (:iban bank-account)
-   :token  (get (:users bank-account) username)
-   :reason nil})
+  [query-feedback username]
+  (let [bank-account (first (:result query-feedback))]
+    {:iban   (:iban bank-account)
+     :token  (get (:users bank-account) username)
+     :reason nil}))
 
 (defn- success-new
   [iban command-feedback]
   {:iban   iban
-   :token  (subs command-feedback 6)
+   :token  (:additional-info command-feedback)
    :reason nil})
 
 (defn get-account
@@ -34,24 +35,27 @@
         qb (:query-bus db)
         cb (:command-bus db)
         existing-account (query-bus/issue-query qb (FindUserQuery. id username))]
-    (if
-      (string? existing-account)
+    (cond
+      (:timed-out existing-account)
+      (error existing-account)
+      (:failure existing-account)
       (let [command-feedback (command-bus/issue-command cb (CreateUserAccountCommand. id username (crypto/encrypt password)))]
-        (if (string? command-feedback)
-          (error command-feedback)
+        (if (:success command-feedback)
           (let [iban (vg/new-iban)
                 command-feedback (command-bus/issue-command cb (CreateBankAccountCommand. id iban username))]
-            (if (str/starts-with? command-feedback "token:")
+            (if (:success command-feedback)
               (success-new iban command-feedback)
-              (error command-feedback)))))
+              (error command-feedback)))
+          (error command-feedback)))
+      (:success existing-account)
       (if
-        (crypto/check password (:password existing-account))
+        (crypto/check password (:password (:result existing-account)))
         (let [query-feedback (query-bus/issue-query qb (FindBankAccountsForUserQuery. id username))]
           (cond
-            (string? query-feedback) (error query-feedback)
-            (empty? query-feedback) (error "no linked bank account found")
-            :else (success (first query-feedback) username)))
-        (error "invalid password")))))
+            (:failure query-feedback) (error query-feedback)
+            (empty? (:result query-feedback)) (error {:reason "no linked bank account found"})
+            :else (success query-feedback username)))
+        (error {:reason "invalid password"})))))
 
 (defrecord AccountCreationService []
   component/Lifecycle
