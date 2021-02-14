@@ -1,0 +1,14 @@
+{:abracad         [[com.damballa/abracad "0.4.14-alpha2" :exclusions
+                    [org.apache.avro/avro com.thoughtworks.paranamer/paranamer]]]
+ :avro            [[org.apache.avro/avro "1.10.1"]]
+ :avro-serializer [[io.confluent/kafka-avro-serializer "6.1.0" :exclusions
+                    [io.netty/netty org.slf4j/slf4j-log4j12 com.fasterxml.jackson.core/jackson-core]]]
+ :clojure         [[org.clojure/clojure "1.10.2"]
+                   [org.clojure/core.specs.alpha "0.2.56"]
+                   [org.clojure/spec.alpha "0.2.194"]]
+ :jackson         [[com.fasterxml.jackson.core/jackson-annotations "2.12.1"]
+                   [com.fasterxml.jackson.core/jackson-core "2.12.1"]
+                   [com.fasterxml.jackson.core/jackson-databind "2.12.1"]]
+ :json            [[org.clojure/data.json "1.0.0"]]
+ :logging         [[org.clojure/tools.logging "1.1.0"]
+                   [ch.qos.logback/logback-classic "1.3.0-alpha5"]]}

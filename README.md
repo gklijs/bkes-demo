@@ -5,7 +5,6 @@
 
 Major rewrite from [kafka-graphql-examples](https://github.com/openweb-nl/kafka-graphql-examples), improving on the event sourcing and cqrs part is mostly done.
 
-There is a bug breaking lein-modules with leiningen > 2.9.2 [github](https://github.com/jcrossley3/lein-modules/issues/45). So for now you need to run something like `lein upgrade 2.9.2` downgrading leiningen of you are on a later version.
 Todo is updating the docs, and have some assignments for the tutorial.
 
 ---

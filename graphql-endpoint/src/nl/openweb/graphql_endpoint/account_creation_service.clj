@@ -1,5 +1,6 @@
 (ns nl.openweb.graphql-endpoint.account-creation-service
-  (:require [com.stuartsierra.component :as component]
+  (:require [clojure.string :as str]
+            [com.stuartsierra.component :as component]
             [crypto.password.pbkdf2 :as crypto]
             [nl.openweb.graphql-endpoint.command-bus :as command-bus]
             [nl.openweb.graphql-endpoint.query-bus :as query-bus]
@@ -21,12 +22,11 @@
    :token  (get (:users bank-account) username)
    :reason nil})
 
-(defn- get-bank-account
-  [qb id iban username]
-  (let [bank-account (query-bus/issue-query qb (FindBankAccountQuery. id iban))]
-    (if (string? bank-account)
-      (error bank-account)
-      (success bank-account username))))
+(defn- success-new
+  [iban command-feedback]
+  {:iban   iban
+   :token  (subs command-feedback 6)
+   :reason nil})
 
 (defn get-account
   [db username password]
@@ -41,9 +41,9 @@
           (error command-feedback)
           (let [iban (vg/new-iban)
                 command-feedback (command-bus/issue-command cb (CreateBankAccountCommand. id iban username))]
-            (if (string? command-feedback)
-              (error command-feedback)
-              (get-bank-account qb id iban username)))))
+            (if (str/starts-with? command-feedback "token:")
+              (success-new iban command-feedback)
+              (error command-feedback)))))
       (if
         (crypto/check password (:password existing-account))
         (let [query-feedback (query-bus/issue-query qb (FindBankAccountsForUserQuery. id username))]

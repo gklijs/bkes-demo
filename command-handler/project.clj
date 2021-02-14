@@ -3,9 +3,8 @@
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
-  :plugins [[lein-modules "0.3.11"]]
-  :dependencies [[nl.openweb/topology :version]
-                 [org.clojure/clojure :version]]
+  :plugins [[walmartlabs/shared-deps "0.2.8"]]
+  :dependency-sets [:clojure nl.openweb/topology]
   :main nl.openweb.command-handler.core
   :profiles {:uberjar {:omit-source  true
                        :aot          :all

@@ -27,10 +27,11 @@
 (defn handle-create-account
   [^KafkaProducer producer ^CreateBankAccountCommand command]
   (feedback producer command
-            (if
-              (db/get-from-db :bank-accounts (.getIban command))
-              "iban already exist"
-              (BankAccountCreatedEvent. (.getIban command) (vg/new-token) (.getUsername command)))))
+            (cond
+              (not (vg/valid-open-iban (.getIban command))) "invalid open iban"
+              (db/get-from-db :bank-accounts (.getIban command)) "iban already exist"
+              :else (let [token (vg/new-token)]
+                      [(str "token:" token) (BankAccountCreatedEvent. (.getIban command) token (.getUsername command))]))))
 
 (defn handle-complete-transfer
   [^KafkaProducer producer ^MarkTransferCompletedCommand command]

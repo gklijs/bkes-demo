@@ -83,4 +83,4 @@
   []
   {:schema-provider (-> {}
                         map->SchemaProvider
-                        (component/using [:transaction-service :account-creation-service :money-transfer-service]))})
+                        (component/using [:transaction-service :account-creation-service :money-transfer-service :initiator]))})
