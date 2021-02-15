@@ -12,4 +12,4 @@
  :json            [[org.clojure/data.json "1.0.0"]]
  :logging         [[org.clojure/tools.logging "1.1.0"]
                    [ch.qos.logback/logback-classic "1.3.0-alpha5"]]
- :money           [[clojurewerkz/money "1.10.0"]]}
+ :money           [[clojurewerkz/money "1.10.0"][org.joda/joda-money "1.0.1"]]}

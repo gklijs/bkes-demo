@@ -3,7 +3,7 @@
   :dependencies [[crypto-password "0.2.1"]
                  [com.stuartsierra/component "0.4.0"]
                  [com.walmartlabs/lacinia-pedestal "0.12.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
-                 [org.slf4j/slf4j-api "2.0.0-alpha1"]]
+                 [org.apache.logging.log4j/log4j-slf4j-impl "2.14.0"]]
   :dependency-sets [:clojure :money nl.openweb/topology]
   :main nl.openweb.graphql-endpoint.core
   :profiles {:uberjar {:omit-source  true

@@ -39,7 +39,9 @@
   [^KafkaProducer producer ^TransactionsByIbanQuery query]
   (feedback producer query
             (if-let [transactions (db/get-from-db :transactions-by-iban (.getIban query))]
-              (take-last (.getMaxItems query) transactions)
+              (->> transactions
+                   (take-last (.getMaxItems query))
+                   reverse)
               [])))
 
 (defn handle-query

@@ -11,7 +11,8 @@
                             MoneyCreditedEvent MoneyReturnedEvent CommandSucceeded CommandFailed CommandName
                             MarkTransferCompletedCommand)
            (org.apache.kafka.clients.producer KafkaProducer)
-           (org.apache.kafka.clients.consumer ConsumerRecord)))
+           (org.apache.kafka.clients.consumer ConsumerRecord)
+           (java.util Locale)))
 
 (defn invalid-from
   [from]
