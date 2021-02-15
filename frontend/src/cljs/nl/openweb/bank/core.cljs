@@ -1,5 +1,5 @@
 (ns nl.openweb.bank.core
-  (:require [reagent.core :as reagent]
+  (:require [reagent.dom :as dom]
             [re-frame.core :as re-frame]
             [re-graph.core :as re-graph]
             [nl.openweb.bank.config :as config]
@@ -16,14 +16,14 @@
 
 (defn mount-root []
   (re-frame/clear-subscription-cache!)
-  (reagent/render [views/main-panel]
-                  (.getElementById js/document "app")))
+  (dom/render [views/main-panel]
+              (.getElementById js/document "app")))
 
 (defn ^:export init []
   (routes/app-routes)
   (re-frame/dispatch-sync [::events/initialize-db])
-  (re-frame/dispatch [::re-graph/init {:ws-url   "ws://localhost:8888/graphql-ws"
-                                       :http-url "http://localhost:8888/graphql"}])
+  (re-frame/dispatch [::re-graph/init {:ws   {:url "ws://localhost:8888/graphql-ws"}
+                                       :http {:url "http://localhost:8888/graphql"}}])
   (doseq [dispatch (get-dispatches default-db)]
     (re-frame/dispatch dispatch))
   (dev-setup)
