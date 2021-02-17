@@ -3,13 +3,13 @@ skinparam shadowing false
 skinparam defaultFontName Roboto
 skinparam defaultFontSize 26
 
-package "nl.openweb.command-handler.core.clj" #White{
-    component "user-command-handler" as uch #Yellow
+package "nl.openweb.projector.core.clj" #White{
+    component "user-query-handler" as uch #Yellow
     component "user-event-handler" as ueh #Yellow
-    component "bank-command-handler" as bch #Yellow
+    component "bank-query-handler" as bch #Yellow
     component "bank-event-handler" as beh #Yellow
 }
-package "nl.openweb.command-handler.db.clj" #White{
+package "nl.openweb.projector.db.clj" #White{
     database "bank-accounts" as badb #LightBlue
     database "users" #LightBlue
 }
@@ -21,10 +21,11 @@ bch --> badb :check status
 beh --> badb :add/update aggregate
 kc --> ueh :routes events
 kc --> beh :routes events
-kc --> uch :routes commands
-kc --> bch :routes commands
-kc <-- uch :feedback and events
-kc <-- bch :feedback and events
+beh --> kc :transactions
+kc --> uch :routes queries
+kc --> bch :routes queries
+kc <-- uch :feedback
+kc <-- bch :feedback
 
 
 @enduml

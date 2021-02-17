@@ -37,7 +37,6 @@ Contents
 * [Development](#development)
     * [Building locally](#building-locally)
     * [Building remote](#building-remote)
-    * [Building other backend](#other-backend)
 * [Modules](#modules)
     * [Topology](#topology)
     * [Synchronizer](#synchronizer)
@@ -51,10 +50,8 @@ Contents
 
 * [JDK](https://jdk.java.net/) 11 or later, `java -version` to check.
 * [Leiningen](https://github.com/technomancy/leiningen/wiki/Packaging) 2, 2.9.5 works, `lein -v` to check
-* sassc to compile css, see [lein-sass](https://github.com/tuhlmann/lein-sass#installation) for instructions, 3.6.1 works `sassc -v`
-  to check.
-* [Docker](https://www.docker.com/) with docker-compose, doesn't need to be recent, `docker -v` and `docker-compose -v`
-  to check. Docker version 20.10.2 with docker-compose version 1.27.4 works.
+* sassc to compile css, see [lein-sass](https://github.com/tuhlmann/lein-sass#installation) for instructions, 3.6.1 works `sassc -v` to check.
+* [Docker](https://www.docker.com/) with docker-compose, doesn't need to be recent, `docker -v` and `docker-compose -v` to check. Docker version 20.10.2 with docker-compose version 1.27.4 works.
 
 ## <a id="intro">Intro</a>
 
@@ -70,12 +67,10 @@ The article which served as inspiration for this project
 is [real-time alerts](https://www.confluent.io/blog/real-time-financial-alerts-rabobank-apache-kafkas-streams-api/).
 There are no alerts in the current project, these could be added, using browser push notifications for example.
 
-As a general rule, it's best to have the same kind of messages on a Kafka cluster. Data on the brokers is always stored
-in a binary format, but for clients it's easier to product and consume in something other than binary, therefore there
-are a lot of (de)serialiser options. Some of the most common ones are the String(de)serializer and the KafkaAvro(de)
-serializer. In this project Strings are used for the keys, and Avro for the values. You can leave the key empty, but
-when you supply a key, it can be used to divide a topic among partitions. The default way Kafka partitions messages into
-partitions is using the hash of the key.
+As a general rule, it's best to have the same kind of messages on a Kafka cluster.
+Data on the brokers is always stored in a binary format, but for clients it's easier to product and consume in something other than binary, therefore there are a lot of (de)serialiser options.
+Some of the most common ones are the String(de)serializer and the KafkaAvro(de)serializer.
+In this project Strings are used for the keys, and Avro for the values. You can leave the key empty, but when you supply a key, it can be used to divide a topic among partitions. The default way Kafka partitions messages into partitions is using the hash of the key.
 
 For now it's assumed that just one of all the modules run, so the keys aren't really important.
 Once one want to scale out, using multiple command-handlers for example, it becomes important the commands for the same aggregate and on the same partition. This will help keeping the system consistent.
@@ -92,136 +87,102 @@ Underneath is a complete overview of all the components. Where the grey one is t
 
 ## <a id="development">Development</a>
 
-Development is done in Clojure with a lot of java integration. When starting this project there where no great Kafka
-libraries for Clojure. Both [jackdaw](https://github.com/FundingCircle/jackdaw)
-and [noah](https://github.com/blak3mill3r/noah) look promising, and might be a better fit than Java interop, especially
-when your not yet familiar with Kafka.
+Development is done in Clojure with a lot of java integration. When starting this project there were no great Kafka libraries for Clojure.
+Both [jackdaw](https://github.com/FundingCircle/jackdaw) and [noah](https://github.com/blak3mill3r/noah) look promising, and might be a better fit than Java interop, especially when you're not yet familiar with Kafka.
 
-This project is only using the producer and consumer to add or consume data from Kafka. But especially when merging
-topics it might be easier to use the Kafka Streams api. With it you can do things like having a time window, or do joins
-on topics. The mentioned libraries also use Kafka Streams. This could be relevant when you have an '
-AlertsSettingsUpdated' event which must be combined with a 'MightTriggerAlert' event. Because you want to send alerts,
-using the latest settings available.
+This project is only using the producer and consumer to add or consume data from Kafka.
+There are a couple of of different ways to create a consumer, based on whether it should rread from the start and if the messages should all be consumed, or only a part, once multiple instances should be running.
+Especially when merging topics it might be easier to use the Kafka Streams api.
+With Kafka Streams you can do things like having a time window, or perform joins on topics.
+The mentioned libraries also support Kafka Streams. This could be relevant when you have an 'AlertsSettingsUpdated' event which must be combined with a 'MightTriggerAlert' event
+Making sure you use the latest settings available when sending alerts.
 
 ### <a id="building-locally">Building locally</a>
 
-There are two out of the box ways to run the project, using the confluent cli, or Docker. Using docker is a lot easier
-because the whole setup is scripted. When developing on one of the parts, it's possible to stop the docker of that part
-and run it locally. The Docker config has additional listeners to make this easier,
+There are two out-of-the-box ways to run the project, using the confluent cli, or Docker. Using docker is a lot easier because the whole setup is scripted. For both you need the same [Prerequisites](#prerequisites).
+When developing on one of the parts, it's possible to stop the docker of that part
+and run it locally.
+The Docker config has additional listeners to make this easier,
 see [kafka-listeners-explained](https://rmoff.net/2018/08/02/kafka-listeners-explained/).
+When no environment properties are set, the apps will default to the default ports for Kafka, which are the same as used for setting up the docker environment. So by default it will connect to the Kafka and Schema Registry instance stated by [docker](docker-cluster.yml).
 
 #### Using Clojure and confluent cli
 
-This project uses the modules plugin for Leingen. If you have Leingen installed you need to first 'install' topology by
-doing `lein install` in the topology folder. If you use [Cursive](https://cursive-ide.com/) you can start each module by
-going to the main function in `core.clj`, or you can use `lein run` to start. For the Kafka stuff it's handy to use
-the [confluent cli](https://docs.confluent.io/current/cli/index.html#cli).
+This project uses the sub plugin for Leingen. If you have Leingen installed you need to first 'install' topology by running `lein install` in the topology folder.
+If you use [Cursive](https://cursive-ide.com/) you can start each module by going to the main function in `core.clj`, or you can use `lein run` to start.
+For development, it can help to mark the [java](topology/target/main/java) folder in `topology/target/main` as generated sources root, so you get some advantages like code completion.
+For the Kafka stuff it's handy to use the [confluent cli](https://docs.confluent.io/current/cli/index.html#cli).
 
-With this you can use `confluent destroy` to stop all the processes and `confluent start schema-registry` to start
-zookeeper, Kafka and the schema registry. This will use the 'default' ports, which make it possible to run all the
-modules without having to set environment variables.
-
-In addition to Kafka you also not to run PostgreSQL, you might do this using docker, in which case you can use
-the `setup-db.sh` script to prepare the database.
+With this you can use `confluent local destroy` to stop all the processes and `confluent local services schema-registry start` to start zookeeper, Kafka and the Schema Registry.
+Don't forget to run the `synschronize.sh` script each time you start again.
+This will use the 'default' ports, which make it possible to run all the modules without having to set environment variables.
 
 #### Using Docker
 
-You will need Leiningen and sassc installed. Then with the `prepare.sh` script all the fat jars and a few other files
-needed for the Docker images are created. Then with the `restart.sh` script you can use Docker to set it up. You will
-need about 8Gb of ram for Docker to not run out of memory.
+With the `prepare.sh` script all the uberjars, and a few other files needed for the Docker images are created.
+Then with the `restart.sh` script you can use Docker to set it up.
+You might also do some steps manually, especially as it takes quit some time to set up everything each time.
+You will need about 4Gb of ram for Docker to not run out of memory.
 
-Currently the script works with a sleep, to prevent unnecessary errors from other containers not being ready yet. You
-can ignore the errors about orphan containers apparently this is a side effect of having multiple Docker compose files
-in the same folder. Compose file version 2 is used for multiple reasons, it's easy to set a mem limit, and the names of
-the containers can be set, which make it easy to measure cpu and memory.
+Currently, the script works with a sleep, to prevent unnecessary errors from other containers not being ready yet.
+You can ignore the errors about orphan containers apparently this is a side effect of having multiple Docker compose files in the same folder.
+The advantage that it's using the same network, so easy to connect to the different components.
+Compose file version 2 is used for multiple reasons, it's easy to set a mem limit, and the names of the containers can be set.
 
-For the Kafka images the latest ones from Confluent are used. For the frontend we use Nginx. Most other containers are
-just jar's that run inside `azul/zulu-openjdk-alpine` to keep the docker image small. For the Confluent images there are
-a lot of options that can be set. Encryption is enabled, but it's also possible to create acl's for authorization. Among
-the other kinds of properties are defaults for creating topics, and configuration of the log cleanup. The whole list can
-be found [here](https://kafka.apache.org/documentation/#brokerconfigs).
+For the Kafka images the latest ones from Confluent are used. For the frontend we use Nginx. Most other containers are just jar's that run inside `azul/zulu-openjdk-alpine` to keep the docker image small.
+To prevent using too many resources it's using just one Zookeeper and one Broker.
+In [kafka-graphql-examples](https://github.com/openweb-nl/kafka-graphql-examples/blob/master/docker-cluster.yml) a cluster is used, and also ssl is enabled for security.
+For the Confluent images there are a lot of options that can be set.
+Among the other kinds of properties are defaults for creating topics, and configuration for the log cleanup.
+The whole list can be found [here](https://kafka.apache.org/documentation/#brokerconfigs).
 
 ### <a id="building-remote">Building remote</a>
 
-Make sure sure you are connected to the correct remote Docker machine. With the build-all.sh script in the root the
-running containers started with the script will be stopped and deleted. And in three phases the needed containers will
-be started. The `.dockerignore` files are set to only expose the files needed which should make it pretty fast, still
-some of the jar's can be quite big.
-
-### <a id="other-backend">Building other backends</a>
-
-It's possible to add the topology dependency to a jvm project by including it in the dependencies, for maven:
-
-```xml    
-<dependency>
-    <groupId>nl.openweb</groupId>
-    <artifactId>topology</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
-</dependency>
-```
-
-You will need to have run `lein install` in the topology folder or have run the `prepare.sh` script to make it work.
-
-This will put the Avro SpecificRecord classes on your classpath, which you need if you want to consume using specific
-Avro classes instead of getting an generic Avro class. Specific classes are both easier to use, and are supposed to be
-faster to serialize. You can also use these classes to produce. To do this create the correct object as value of in a
-Kafka ProducerRecord. For non-jvm languages the support for Avro is often more limited. For rust to some degree
-the [schema_registry_converter](https://crates.io/crates/schema_registry_converter) can be used.
-
-If you want to use some of the Clojure functions from java take a look at the last part
-of [Clojure java interop / calling Clojure from java](https://clojure.org/reference/java_interop). Most namespaces also
-have the gen-class attribute, providing a more direct way of calling the functions.
+Make sure you are connected to the correct remote Docker machine. With the build-all.sh script in the root the running containers started with the script will be stopped and deleted.
+In three phases the needed containers will be started.
+The `.dockerignore` files are set to only expose the files needed which should make it pretty fast, still some of the jar's can be quite big. You might need to configure the advertised listeners differently though.
 
 ## <a id="modules">Modules</a>
 
-The modules are describe in order of data flow. The first, topology will be used to generate the data types, the last
-but one, frontend will expose the data to make it visible.
+The modules are described in order of data flow.
+The first, topology will be used to generate the data types, the last one, frontend will expose the data to make it visible.
 
 ### <a id="topology">Topology</a>
 
-This module generates the java classes needed to use specific Avro schemas. This is usually done using a maven plugin,
-which generates the classes based on .avsc files as is described in
-the [avro documentation](https://avro.apache.org/docs/1.9.1/gettingstartedjava.html#Compiling+the+schema).
-
-[Spring cloud stream schema](https://github.com/spring-cloud/spring-cloud-stream/tree/master/spring-cloud-stream-schema)
-also has an option to use Avro, in that case they need to be in the source directory. The way this integrates with Kafka
-is however much different from the confluent one, so it is most useful in a spring cloud only environment.
+This module generates the java classes needed to use specific Avro schemas. This is usually done using a maven plugin, which generates the classes based on .avsc files as is described in the [avro documentation](https://avro.apache.org/docs/1.10.1/gettingstartedjava.html#Compiling+the+schema).
 
 ![Topology](docs/topology.svg)
 
-Generating the classes with the maven plugin can be very tedious since there tend to be a lot of repeated elements in
-schemas. By doing some replacements on the structure in the schemas.edn a lot of these are prevented. For always setting
-the namespace of the records to 'nl.openweb.data'. This also allows to have a method, which only needs the names, to get
-the parsed schema from the generated classes.
+Generating the classes with the maven plugin can be very tedious since there tend to be a lot of repeated elements in schemas.
+By doing some replacements on the structure in the schemas.edn a lot of these are prevented. 
+For now, the namespace of the records is always set to `nl.openweb.data`.
+This also allows to have a method, which only needs the names, to get the parsed schema from the generated classes.
 
-The module also provides some convenient functions to consume from and produce to Kafka for the use of Kafka with
-Clojure. For other languages there are probably better options.
+The module also provides some convenient functions to consume from and produce to Kafka for the use of Kafka with Clojure.
 
-There are also some functions to deal with specific data types like 'IBAN' and 'UUID'.
+There are also some functions to deal with specific data types like `IBAN` and `UUID`.
 
-Finally there are functions describing the topics. The [topology.edn](topology/resources/topology.edn) file in the
-resource folder gives information about the topics, for example:
+Finally, there are functions describing the topics.
+The [topology.edn](topology/resources/topology.edn) file in the resource folder gives information about the topics, for example:
 
 ```clojure
- "commands" [24 3 [:ConfirmAccountCreation :ConfirmMoneyTransfer] {:retention.ms -1}]
+ "bank_events"                 [1 3 [:BankAccountCreatedEvent :MoneyCreditedEvent :MoneyDebitedEvent :MoneyReturnedEvent
+                                     :TransferCompletedEvent :TransferFailedEvent :TransferStartedEvent
+                                     :UserAddedToBankAccountEvent :UserRemovedFromBankAccountEvent] {:retention.ms -1}]
 ```
 
-The first part is the actual name of the Kafka topic, and in this particular case also serves as the key as part of a
-map. From the vector, which is the value, we can read that it had `9` partitions `3` replicas, is bound to
-the `ConfirmAccountCreation` and `ConfirmMoneyTransfer` Avro types (which can be found in
-the [schemas.edn](topology/resources/schemas.edn)), has additional configuration to prevent the events from being
-deleted from kafka.
+The first part is the actual name of the Kafka topic, and in this particular case also serves as the key as part of a map.
+From the vector, which is the value, we can read that it had `1` partitions `3` replicas, is bound to `BankAccountCreatedEvent`, `MoneyCreditedEvent` and other Avro types (which can be found in the [schemas.edn](topology/resources/schemas.edn)), has additional configuration to prevent the events from being deleted from kafka.
 
-To be able to use new schemas changes are needed the `topology.edn` and `schemas.edn`, a `lein deploy` of the code needs
-to be done (maybe with a new version), and the Synchronizer needs to run with the new artifacts Clients using the new
-dependency are now able to produce/consume the new schema from the configured topics.
+To be able to use new schemas, changes are needed the `topology.edn` and `schemas.edn`, a `lein install` of the code needs to be done (maybe with a new version), and the Synchronizer needs to run with the new artifacts.
+Clients using the new dependency should then be able to produce/consume the new schema from the configured topics.
 
 ### <a id="synchronizer">Synchronizer</a>
 
-This module is used to synchronize an actual cluster with the configuration found in the topology module. So when a
-topic does not exist yet, it creates it, and when there is a topic which is not present in the topology it will be
-deleted. It will also try to set the schemas for the topics, when there is a schema name provided. When creating topics
-it will try to set the replication factor to the requested value, but never higher the the amount of brokers available.
+This module is used to synchronize an actual cluster with the configuration found in the topology module.
+So when a topic does not exist yet, it creates it, and when there is a topic which is not present in the topology it will be deleted.
+It will also try to set the schemas for the topics, when there is a schema name provided.
+When creating topics it will try to set the replication factor to the requested value, but never higher the amount of brokers available.
 When a configuration is provided, it will be used when creating the topics.
 
 ![Synchronizer](docs/synchronizer.svg)
@@ -229,27 +190,36 @@ When a configuration is provided, it will be used when creating the topics.
 There are some limitations in the current implementation:
 
 - When the topic already exist, and also should exist, the configuration of the topic is not checked.
-- It's not possible to use any of the new ways to configure the schema registry, it's always assuming the '
-  TopicNameStrategy',
-  see [group by topic or other relationships](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#group-by-topic-or-other-relationships)
-  .
+- It's always assuming the 'TopicNameStrategy', see [group by topic or other relationships](https://docs.confluent.io/current/schema-registry/serializer-formatter.html#group-by-topic-or-other-relationships).
 - Errors are not handled (e.g. no retry), but the responses from setting the schemas can be read, and the exit status is
-  only 0 when it's gone ok.
+  only 0 when there were no errors.
 
 ### <a id="command-handler">Command handler</a>
 
-In order to validate the commands the command handler will do queries on postgres to know whether the message was
-already handled. It will do inserts and updates to transfer money and open accounts. When a `ConfirmAccountCreation` is
-received this will this will almost always generate an `AccountCreationConfirmed` containing the generated token and
-iban. Only when an existing iban is generated an `AccountCreationFailed` is generated. When a `ConfirmMoneyTransfer` is
-received there are multiple reason it might fail. The token might be wrong, there me be insufficient funds, or the from
-and to have the same value. This will trigger a `MoneyTransferFailed` event with the reason. When the transfer succeeds
-the `MoneyTransferConfirmed` will be returned, containing only the uuid of the command. For each changed account
-a `BalanceChanged` event is returned. For each of these events as a key the useername will be used.
+In order to validate the commands the command handler will query the in memory db for existing aggregates.
+Each command should either fail or succeed, which results in a message back.
+Each successful command also will add an event.
+For doing transaction a kind of sub-loop is entered, and it's 'listening' to the result, in order to further process the transaction.
+This is kind of following the saga pattern, where for one command you need to coordinate multiple aggregates.
+Both the debiting and the crediting part of the transaction may fail, and if the crediting fails while it was debited, the debited money needs to be returned.
+It's a simplification of any real transaction as has some special rules.
+For example, it's excepting any deposit from 'cash', being handled like a checked cash deposit.
+Transfer to any non open iban will be accepted, with the money just being gone. So there will be a `MoneyDebitedEvent` but no `MoneyCreditedEvent`. In a real bank some integration with the other bank is needed.
 
 ![Command handler](docs/command-handler.svg)
 
 ### <a id="projector">Projector</a>
+
+The projector is the component that makes sure we keep the commands separated from the queries.
+It will build a model, a projection, of the current state, based solely on the events that have happened.
+Queries from the graphql-endpoint will be handled using this projection.
+It has a couple of additional atoms which are not directly just a collection of aggregates te be able to easily handle the queries.
+The response to a query can either be a `QueryFailed` with the reason why it failed, or a `QuerySucceeded` where the message will contain the edn representation of the answer.
+This closely ties the projector to the graphql-endpoint, as it's expecting the data in a certain format, which is not formalized.
+There is a special entity, described in Avro as `TransactionHappenedEvent` which are derived events from parts of a transaction.
+These are put into a separate topic, so they can be subscribed to from GraphQL.
+
+![Projector](docs/projector.svg)
 
 ### <a id="graphql-endpoint">Graphql endpoint</a>
 
