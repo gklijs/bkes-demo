@@ -70,7 +70,7 @@ The article which served as inspiration for this project
 is [real-time alerts](https://www.confluent.io/blog/real-time-financial-alerts-rabobank-apache-kafkas-streams-api/).
 There are no alerts in the current project, these could be added, using browser push notifications for example.
 
-As a general rule it's best to have the same kind of messages on a Kafka cluster. Data on the brokers is always stored
+As a general rule, it's best to have the same kind of messages on a Kafka cluster. Data on the brokers is always stored
 in a binary format, but for clients it's easier to product and consume in something other than binary, therefore there
 are a lot of (de)serialiser options. Some of the most common ones are the String(de)serializer and the KafkaAvro(de)
 serializer. In this project Strings are used for the keys, and Avro for the values. You can leave the key empty, but
@@ -79,31 +79,14 @@ partitions is using the hash of the key.
 
 For now it's assumed that just one of all the modules run, so the keys aren't really important.
 Once one want to scale out, using multiple command-handlers for example, it becomes important the commands for the same aggregate and on the same partition. This will help keeping the system consistent.
-Note that the current setup has some [flaws](WARNING.md).
+Note that the current setup has some [flaws](WARNING.md). Some of these might be solved by using the [Axon framework](https://axoniq.io/product-overview/axon-framework) like in [bank-axon-graphql](https://github.com/gklijs/bank-axon-graphql), I'm not sure how easy it's to use with Clojure however.
 
-The base idea of the project is to serve as an example of event sourcing, where instead of having a 'state' as source of
-truth we use events. It makes use of some of the best practices by using both events which start with 'Confirm', which
-need to be handled by another component and lead to either a 'Confirmed' or 'Failed' event. By using id's in the
-messages, when needed the creator of the 'Confirm' event can eventually know whether the command succeeded. Sometimes
-there may be additional information in the confirmed events, failed events typically contain the reason why the command
-failed. Even trough the 'real' source of truth are events, most component keep some kind of state. In this particular
-project almost all state only exists in memory, and even the Kafka containers are not configured to have use data
-volumes. Which makes it easy to restart the project, but is not production like. There are other things missing as well,
-like security, and some components would need additional features to be production ready.
+The base idea of the project is to serve as an example of event sourcing, where instead of having a 'state' as source of truth we use events. Multiple events around the same entity create an aggregate. This is the derived 'state' against which the commands should be evaluated.
 
-All the used event are versioned using [Avro](https://avro.apache.org/) and
-the [Schema Registry](https://docs.confluent.io/current/schema-registry/docs/index.html), which is configured with
-default settings. This makes sure, when using the Avro (de)serialiser, we can update schema's but only with
-backwards-compatible ones. The serializer takes care of converting binary data to/from data in specific records.
-Since [an enhancement of the Schema Registry](https://www.confluent.io/blog/put-several-event-types-kafka-topic/) it's
-possible to keep using the Schema Registry for restricting breaking changes, while still being able to put multiple
-types of events in one topic. This is used to put multiple types of events on one topic. For example all the commands
-are put on one topic. By also using the username as the key as mentioned, we are almost sure the order of the commands
-for each user is kept.
+All the used messages are versioned using [Avro](https://avro.apache.org/) and the [Schema Registry](https://docs.confluent.io/current/schema-registry/docs/index.html), which is configured with default settings. This makes sure, when using the Avro (de)serialiser, we can update schema's but only with backwards-compatible ones. The serializer takes care of converting binary data to/from data in specific records.
+Since [an enhancement of the Schema Registry](https://www.confluent.io/blog/put-several-event-types-kafka-topic/) it's possible to put multiple types of events in one topic.
 
-Underneath is a complete overview of all the components. Where the grey one is the kafka platform, including ZooKeeper
-and Schema Registry, the green is Nginx and the blue ones are PostgreSQL databases. The yellow ones are, at least in the
-master branch, clojure applications.
+Underneath is a complete overview of all the components. Where the grey one is the kafka platform, including ZooKeeper and Schema Registry, the green is Nginx, the blue ones are in memory databases, and the yellow ones are Clojure applications.
 
 ![All connections](docs/overview.svg)
 

@@ -3,18 +3,20 @@ skinparam shadowing false
 skinparam defaultFontName Roboto
 skinparam defaultFontSize 26
 
-database balancedb as pgb #LightBlue
-database transactiondb as pgt #LightBlue
+database [projection db] as pgt #LightBlue
+database [aggregate db] as pgb #LightBlue
 [Kafka] as ka #LightGrey
 [Command handler] as ch #Yellow
+[Projector] as pr #Yellow
 [GraphQL endpoint] as ge #Yellow
 [Frontend server] as fs #LightGreen
 actor client as cl #White
 
+ge <-right-> ka
 cl <- fs
 cl <---> ge
 ch <-up-> ka
-ge <--> ka
-ch <-right-> pgb : executes commands
-ge <-right-> pgt : derived state
+pr <--> ka
+ch <-right-> pgb
+pr <-right-> pgt
 @enduml
