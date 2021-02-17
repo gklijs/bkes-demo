@@ -1,7 +1,6 @@
-(ns nl.openweb.graphql-endpoint.core
+(ns nl.openweb.graphql-endpoint.start
     (:require [nl.openweb.graphql-endpoint.system :as system]
-      [com.stuartsierra.component :as component])
-    (:gen-class))
+      [com.stuartsierra.component :as component]))
 
 (defn -main
       []

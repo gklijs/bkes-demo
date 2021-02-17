@@ -1,0 +1,7 @@
+# Not production ready for several reasons
+
+* `nl.openweb.topology.clients/consume-all-from-start` does not wait till ready, which can cause inconsistencies.
+* Nothing is implemented to prevent two concurrent modifications on the same aggregate. Ideally you work with version numbers, and the first to hit the 'server' is accepted.
+* It's not possible to quickly read in a certain aggregate. Because of Kafka all the events need to be read, and we can't just get the events with a certain key.
+* Both the Command Handler and the Projector use a in memory db, that just keeps growing and at some point causes them to crash. You still want to keep something in memory. For the Command handler you could keep the recent aggregates, and have some way or checking the existence or state with the server. For the Projectorr you could use something like [crux](https://github.com/juxt/crux). Crux has the added advantage of making queries related to time easy, and we already have the event times.
+* A saga should end within the timeout, currently 1000ms, and on the same instance it was started. They could end in a sort of limbo and not ever complete. They might also need to take longer than that. It's possible to leverage Kafka to manage which saga is handled by which instance. It's not easy to solve however, because some event crucial for the saga processing might have passed while the assignment of the saga is changed. There is no easy way to properly rebuild the saga state, although all relevant events use the same key.
