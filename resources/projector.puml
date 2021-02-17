@@ -16,9 +16,9 @@ package "nl.openweb.projector.db.clj" #White{
 component Kafka as kc #F26724
 
 uch --> users :check status
-ueh --> users :add/update aggregate
+ueh --> users :add/update projection
 bch --> badb :check status
-beh --> badb :add/update aggregate
+beh --> badb :add/update projection
 kc --> ueh :routes events
 kc --> beh :routes events
 beh --> kc :transactions
