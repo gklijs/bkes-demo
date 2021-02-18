@@ -5,8 +5,9 @@
                  [com.walmartlabs/lacinia-pedestal "0.15.0" :exclusions [com.fasterxml.jackson.core/jackson-core]]
                  [org.apache.logging.log4j/log4j-slf4j-impl "2.14.0"]]
   :dependency-sets [:clojure :money nl.openweb/topology]
-  :main nl.openweb.graphql-endpoint.launcher
-  :profiles {:uberjar {:aot          [nl.openweb.graphql-endpoint.launcher]
+  :main nl.openweb.graphql-endpoint.core
+  :profiles {:uberjar {:omit-source  true
+                       :aot          [nl.openweb.graphql-endpoint.core]
                        :uberjar-name "ge-docker.jar"}
              :viz     {:dependencies [[walmartlabs/system-viz "0.4.0"]]
                        :main         nl.openweb.graphql-endpoint.viz}})

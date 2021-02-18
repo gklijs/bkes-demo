@@ -4,16 +4,16 @@ skinparam defaultFontName Roboto
 skinparam defaultFontSize 26
 
 actor client as cl #White
-database transaction as tr #LightBlue
+component "query-bus" as qb #Yellow
 component consumer as c #Yellow
 component kafka as kc #LightGrey
 component "schema-provider" as sp #Yellow
 
 cl <-> sp :queries or subscribe\lto transactions
-sp -> tr :sql query on\lderived state
-tr <-- c :insert transactions
-c <-- kc :consumes\nBalanceChanged
+sp <-> qb :issue queries
+c <- kc :consumes\nTransactionHappenedEvent
 c --> sp :send transaction\nfor active subscriptions
+qb <-up-> kc: send queries\nreceives feedback
 
 
 @enduml

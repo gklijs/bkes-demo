@@ -1,36 +1,15 @@
 # BOB 2021 - Event in, events out?
 
----
-**Readme will be updated and the project probably a bit as well before the tutorial**
+Using event sourcing strategies can be a nice way to enable some decoupling. However, when interacting with external systems one should watch out how much of the internal objects leak through to the api.
 
-Major rewrite from [kafka-graphql-examples](https://github.com/openweb-nl/kafka-graphql-examples), improving on the
-event sourcing and cqrs part is mostly done.
+Event sourcing is an architecture that brings a couple of benefits compared to crud applications. 
+It becomes easier to model complex domains, because it can be broken down to smaller pieces.
+Because events are the only way to change data, and the events are always stored, there is a clear audit trail.
 
-Todo is updating the docs, and have some assignments for the tutorial.
+Using GraphQL for the api enables streaming which is nice when working with events, because they can be shown in the frontend almost directly. 
+GraphQL also allows you to design specific types, and even gracefully deprecate when needed.
 
----
-
-Using event sourcing strategies can be a nice way to enable some decoupling. However when interacting with external
-systems one should watch out how much of the internal objects leak through to the api.
-
-Event sourcing is an architecture that brings a couple of benefits compared to crud applications. It becomes easier to
-model complex domains. Also because events are the only way to change data, and the events are always stored, there is a
-clear audit trail.
-
-Using GraphQL for the api enables streaming which could be very nice when working with events. But it also allows you to
-design specific types, and even gracefully deprecate when needed.
-
-We will work on example which is easy to setup with docker, and continue to make modifications to the model to add new
-features.
-
-## Summary
-
-It contains a CQRS backend that handles commands from the GraphQL endpoint. That backend will emit both direct responses
-to the commands and derived events while processing the commands. With GraphQL subscriptions these events might be
-passed to the frontend. The test module makes it possible to do performance tests and compare multiple implementations
-and/or configurations.
-
-Contents
+## Contents
 
 * [Prerequisites](#prerequisites)
 * [Intro](#intro)
@@ -45,6 +24,7 @@ Contents
     * [Graphql endpoint](#graphql-endpoint)
     * [Frontend](#frontend)
 * [Scripts](#scripts)
+* [Warning](WARNING.md)
 
 ## <a id="prerequisites">Prerequisites</a>
 
@@ -56,6 +36,12 @@ Contents
 ## <a id="intro">Intro</a>
 
 This project is an example of an event sourcing application using Kafka.
+For the messages it's using the concepts I learned from the [Axon framework](https://docs.axoniq.io/reference-guide/v/3.1/part-i-getting-started/messaging-concepts).
+In shore, we have commands, which is the type of message used to change something, what might lead to an event type of message.
+An event is something which happened, and we keep forever.
+Based on the past events a command can be successful or not.
+To ensure CQRS, based on the events we can build projections, on which queries can be executed.
+Because we issue the commands and queries over Kafka, the feedback for them is also done via specific messages.
 
 If you don't know much about Kafka, then it's a good idea to
 read [an introduction to Kafka](https://hackernoon.com/thorough-introduction-to-apache-kafka-6fbf2989bbc1). 
@@ -166,9 +152,9 @@ Finally, there are functions describing the topics.
 The [topology.edn](topology/resources/topology.edn) file in the resource folder gives information about the topics, for example:
 
 ```clojure
- "bank_events"                 [1 3 [:BankAccountCreatedEvent :MoneyCreditedEvent :MoneyDebitedEvent :MoneyReturnedEvent
-                                     :TransferCompletedEvent :TransferFailedEvent :TransferStartedEvent
-                                     :UserAddedToBankAccountEvent :UserRemovedFromBankAccountEvent] {:retention.ms -1}]
+ "bank_events" [1 3 [:BankAccountCreatedEvent :MoneyCreditedEvent :MoneyDebitedEvent :MoneyReturnedEvent
+                     :TransferCompletedEvent :TransferFailedEvent :TransferStartedEvent
+                     :UserAddedToBankAccountEvent :UserRemovedFromBankAccountEvent] {:retention.ms -1}]
 ```
 
 The first part is the actual name of the Kafka topic, and in this particular case also serves as the key as part of a map.
@@ -223,55 +209,46 @@ These are put into a separate topic, so they can be subscribed to from GraphQL.
 
 ### <a id="graphql-endpoint">Graphql endpoint</a>
 
-This graphql endpoint is by example build
-using [Stuart Sierra Component Library](https://github.com/stuartsierra/component). This helps keeping dependencies
-transparent, and also makes it easier for testing/mocking part of the system.
+This graphql endpoint is by example from [lacinia](https://lacinia.readthedocs.io/en/latest/index.html) build using [Stuart Sierra Component Library](https://github.com/stuartsierra/component).
+This helps keeping dependencies transparent, and also makes it easier for testing/mocking part of the system.
 With [system-viz](https://github.com/walmartlabs/system-viz) we can also easily create an overview of the
-system: ![GraphQL endpoint](docs/ge-system.png). To create a new overview use `lein with-profile viz run` in
-the `graphql-endpoint` folder.
+system: ![GraphQL endpoint](docs/ge-system.png). To create a new overview use `lein with-profile viz run` in the `graphql-endpoint` folder.
 
-Since this component is quit complicated there are views of each service separately.
+You can use [Graph*i*QL](http://localhost:8888/ide) once the project runs to interact via graphql directly.
+As this component is quite complicated there are views of each service separately.
+You can see three services in the diagram, and they provide the resolvers that matches to the schema.
+They provide the needed logic, using the query bus, or the command bus, or both.
+The commands bus is part of the system to deal with commands, sending a command to the right topic, and making sure something is returned in time. This could be a timeout message or the result from the command handler.
+The same applies for the query bus, but here, when there is a result, it will convert the string to some clojure structure.
 
 ![Transaction service](docs/transaction-service.svg)
-Transaction service is used to either do a query on the current transactions in the db, or start a subscription using a
-selection of filters to get new transactions when they are consumed.
+Transaction service is used to either do a query on the current transactions in the db, or start a subscription using a selection of filters to get new transactions when they are consumed.
 
 ![Account creation service](docs/account-creation-service.svg)
 Account creation can be used to create a account and gives feedback, for example when the password is incorrect.
 
-![Opening an acount](docs/openingaccount.svg)
-These is the flow of opening an account.
-
 ![Money transfer service](docs/money-transfer-service.svg)
 Money transfer service can be used to transfer money, and gives feedback, for example when the token is wrong.
+There are some special conditions for the saga handeling in the command bus, such that from the command bus it will be just a success or failure for a transaction.
+Hiding the complexity of the possible multiple events and commands involved.
 
-![Transfer money](docs/transfermoney.svg)
-These is the flow of transferring money.
-
-This endpoint allows querying/streaming `BalanceChanged` events, creating an account/iban and making a transaction, by a
-streams witch will give feedback whether the action succeeded. It's possible to get a subscription with optional
-filters. It's also possible to get all transactions from some iban, or the last transactions. The documented graphiql
-endpoint with can be found [here](http://localhost:8888) when running locally. The endpoint is created
-using [lacinia](http://lacinia.readthedocs.io/en/latest/overview.html) together
-with [lacinia-pedestal](http://lacinia-pedestal.readthedocs.io/en/latest/overview.html).
+This endpoint allows querying/streaming `TransactionHappenedEvent` events, creating an account/iban and making a transaction, by a mutation witch will give feedback whether the action succeeded.
+It's possible to get a subscription with optional filters.
+It's also possible to get all transactions from some iban, or the last transactions.
+The endpoint is created using [lacinia](http://lacinia.readthedocs.io/en/latest/overview.html) together with [lacinia-pedestal](http://lacinia-pedestal.readthedocs.io/en/latest/overview.html).
 
 ### <a id="frontend">Front-end</a>
 
-This is a basic nginx container which contains the output from the Clojurescript re-frame code. The container is exposed
-at port 8181. The location of the GraphQL endpoint is configured
-in [core.cljs](frontend/src/cljs/nl/openweb/bank/core.cljs) this is configured to use localhost. Nginx now just serves
-static files, but could be used to proxy traffic to the graphql endpoint to prevent CORS. If you run into CORS trouble
-localy you may need to add the specific port you use to run the front-end to
-the [server.clj](graphql-endpoint/src/nl/openweb/graphql_endpoint/server.clj) in the endpoint at
-the `:io.pedestal.http/allowed-origins` key.
+This is a basic nginx container which contains the output from the Clojurescript re-frame code. The container is exposed at port 8181.
+The location of the GraphQL endpoint is configured in [core.cljs](frontend/src/cljs/nl/openweb/bank/core.cljs) this is configured to use localhost.
+Nginx now just serves static files, but could be used to proxy traffic to the graphql endpoint to prevent CORS.
+If you run into CORS trouble locally you may need to add the specific port you use when running the front-end to the [server.clj](graphql-endpoint/src/nl/openweb/graphql_endpoint/server.clj) in the endpoint at the `:io.pedestal.http/allowed-origins` key.
 
 ## <a id="scripts">Scripts</a>
 
 There are several scripts to automate things. They are placed at the root level.
 
 * `clean.sh` stops and removes all used Docker container, it does not throw away the images
-* `prepare.sh` is needed the first time before `restart.sh` can be used. It will get all the dependencies and build
-  jar's. It needs leiningen, maven, sassc to be installed. As last step it will (re)build the docker images.
-* `restart.sh` is used to stop and start the whole setup, it does not start a test. Once it's finished the application
-  should be accessible at port 8181.
+* `prepare.sh` is needed the first time before `restart.sh` can be used. It will get all the dependencies and build jar's. It needs leiningen, maven, sassc to be installed. As last step it will (re)build the docker images.
+* `restart.sh` is used to stop and start the whole setup. Once it's finished the application should be accessible at port 8181.
 * `synchronize.sh` is used as part of the restart to set both the Kafka topics and schema's in the schema registry.

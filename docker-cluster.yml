@@ -38,7 +38,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PE:PLAINTEXT
       KAFKA_CONFLUENT_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
-    mem_limit: 2000m
+    mem_limit: 1500m
     restart: always
 
   schema-registry:

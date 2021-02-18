@@ -3,16 +3,15 @@ skinparam shadowing false
 skinparam defaultFontName Roboto
 skinparam defaultFontSize 26
 
-component producer as p #Yellow
-component consumer as c #Yellow
+component "command-bus" as cb #Yellow
 component kafka as kc #LightGrey
 actor client as cl #White
 component "schema-provider" as sp #Yellow
+rectangle "command-handler" as ch #White
 
-cl <-right-> sp :request transfer\lusing server
-sp --> p :executes function\nresulting in a\n transfer and\ncreates subscription\nfor the result
-p --> kc :produces\lConfirmMoneyTransfer
-c <-- kc :consumes\lMoneyTransferConfirmed\nand\nMoneyTransferFailed
-sp <-- c :send MoneyTransferResult\nfor active subscriptions
+cl <-right-> sp :request transfer by using\la GraphQL mutation
+sp --> cb :executes function\nresulting in a\n MoneyTransferCommand\nand awaits the result
+cb <--> kc: send commands\nreceives feedback
+ch <-right-> kc :handles the saga\nwill end with a\nMarkTransferCompletedCommand\nor MarkTransferFailedCommand
 
 @enduml
