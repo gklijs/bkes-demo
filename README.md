@@ -8,6 +8,7 @@ Because events are the only way to change data, and the events are always stored
 
 Using GraphQL for the api enables streaming which is nice when working with events, because they can be shown in the frontend almost directly. 
 GraphQL also allows you to design specific types, and even gracefully deprecate when needed.
+For any questions or remarks please use [github discussions](https://github.com/gklijs/bob2021/discussions).
 
 ## Contents
 
@@ -103,7 +104,7 @@ With this you can use `confluent local destroy` to stop all the processes and `c
 Don't forget to run the `synschronize.sh` script each time you start again.
 This will use the 'default' ports, which make it possible to run all the modules without having to set environment variables.
 
-#### Using Docker
+#### <a id="using-docker">Using Docker</a>
 
 With the `prepare.sh` script all the uberjars, and a few other files needed for the Docker images are created.
 Then with the `restart.sh` script you can use Docker to set it up.

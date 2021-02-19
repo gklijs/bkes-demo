@@ -105,7 +105,7 @@
 (re-frame/reg-event-fx
   ::logout
   (fn [cofx [_ _]]
-    (let [new-db (assoc (:db cofx) :login-status {:valid false})]
+    (let [new-db (assoc (:db cofx) :login-status {:valid false} :transfer-data {:valid false} :transactions nil)]
       {:db         new-db
        :dispatch-n (get-dispatches new-db)})))
 
