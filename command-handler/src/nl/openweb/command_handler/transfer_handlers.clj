@@ -58,7 +58,7 @@
 
 (defn handle-debit-money
   [^KafkaProducer producer ^DebitMoneyCommand command]
-  (feedback producer command
+  (feedback producer command (.getIban command)
             (if-let [account (db/get-from-db :bank-accounts (.getIban command))]
               (if-let [token (get-in account [:users (.getUsername command)])]
                 (if (= token (.getToken command))
@@ -71,14 +71,14 @@
 
 (defn handle-credit-money
   [^KafkaProducer producer ^CreditMoneyCommand command]
-  (feedback producer command
+  (feedback producer command (.getIban command)
             (if (db/get-from-db :bank-accounts (.getIban command))
               (MoneyCreditedEvent. (.getIban command) (.getAmount command) (.getId command))
               "iban not known")))
 
 (defn handle-return-money
   [^KafkaProducer producer ^ReturnMoneyCommand command]
-  (feedback producer command
+  (feedback producer command (.getIban command)
             (if (db/get-from-db :bank-accounts (.getIban command))
               (MoneyReturnedEvent. (.getIban command) (.getAmount command) (.getId command) (.getReason command))
               "iban not known")))

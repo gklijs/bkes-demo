@@ -23,11 +23,6 @@
   (if-let [pr (ProducerRecord. topic-name key value)]
     (.send producer pr)))
 
-(defn produce-without-key
-  [^KafkaProducer producer ^String topic-name ^SpecificRecord value]
-  (if-let [pr (ProducerRecord. topic-name value)]
-    (.send producer pr)))
-
 (defn optionally-add-ssl
   [properties]
   (when (and keystore-location truststore-location ssl-password)

@@ -9,7 +9,7 @@
 
 (defn handle-create-user-account
   [^KafkaProducer producer ^CreateUserAccountCommand command]
-  (feedback producer command
+  (feedback producer command (.getUsername command)
             (if (db/get-from-db :users (.getUsername command))
               "user already exists"
               (UserAccountCreatedEvent. (.getUsername command) (.getPassword command)))))

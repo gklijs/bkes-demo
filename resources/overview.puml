@@ -10,13 +10,16 @@ database [aggregate db] as pgb #LightBlue
 [Projector] as pr #Yellow
 [GraphQL endpoint] as ge #Yellow
 [Frontend server] as fs #LightGreen
+[BKES] as bk #LightGreen
 actor client as cl #White
 
 ge <-right-> ka
-cl <- fs
-cl <---> ge
+cl <-up- fs
+cl <--> ge
 ch <-up-> ka
 pr <--> ka
-ch <-right-> pgb
-pr <-right-> pgt
+ch <-left-> pgb
+pr <-up-> pgt
+ch <-right-> bk
+bk <-up-> ka
 @enduml

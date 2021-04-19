@@ -13,7 +13,7 @@
   []
   (let [^KafkaProducer producer (clients/get-producer app-id)]
     (clients/consume-all-from-start app-id "user_events" user-event-handlers/handle-event)
-    (clients/consume-all-from-start app-id "bank_events" #(bank-event-handlers/handle-event producer %))
+    (clients/consume-all-from-start app-id ["bank_events" "transfer_events"] #(bank-event-handlers/handle-event producer %))
     (clients/consume-part-from-now app-id "user_queries" #(user-query-handlers/handle-query producer %))
     (clients/consume-part-from-now app-id "bank_queries" #(bank-query-handlers/handle-query producer %))))
 

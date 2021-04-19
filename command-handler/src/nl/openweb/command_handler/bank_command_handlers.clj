@@ -9,12 +9,13 @@
                             UserAddedToBankAccountEvent BankAccountCreatedEvent TransferCompletedEvent
                             TransferFailedEvent TransferStartedEvent UserRemovedFromBankAccountEvent)))
 
-(def feedback (command-util/feedback-function "bank_command_feedback" "bank_events"))
+(def bank-feedback (command-util/feedback-function "bank_command_feedback" "bank_events"))
+(def transfer-feedback (command-util/feedback-function "bank_command_feedback" "transfer_events"))
 
 (defn handle-add-user
   [^KafkaProducer producer ^AddUserToBankAccountCommand command]
-  (feedback producer command
-            (if-let [account (db/get-from-db :bank-accounts (.getIban command))]
+  (bank-feedback producer command (.getIban command)
+                 (if-let [account (db/get-from-db :bank-accounts (.getIban command))]
               (if (contains? (:users account) (.getUserToAdd command))
                 "user to add is already owner of bank account"
                 (if-let [token (get (:users account) (.getUsername command))]
@@ -26,8 +27,8 @@
 
 (defn handle-create-account
   [^KafkaProducer producer ^CreateBankAccountCommand command]
-  (feedback producer command
-            (cond
+  (bank-feedback producer command (.getIban command)
+                 (cond
               (not (vg/valid-open-iban (.getIban command))) "invalid open iban"
               (db/get-from-db :bank-accounts (.getIban command)) "iban already exist"
               :else (let [token (vg/new-token)]
@@ -35,8 +36,8 @@
 
 (defn handle-complete-transfer
   [^KafkaProducer producer ^MarkTransferCompletedCommand command]
-  (feedback producer command
-            (if-let [transfer (db/get-from-db :bank-transfers (.getId command))]
+  (transfer-feedback producer command (vg/identifier->string(.getId command))
+                 (if-let [transfer (db/get-from-db :bank-transfers (.getId command))]
               (if
                 (= (:state transfer) :started)
                 (TransferCompletedEvent. (.getId command))
@@ -45,8 +46,8 @@
 
 (defn handle-fail-transfer
   [^KafkaProducer producer ^MarkTransferFailedCommand command]
-  (feedback producer command
-            (if-let [transfer (db/get-from-db :bank-transfers (.getId command))]
+  (transfer-feedback producer command (vg/identifier->string(.getId command))
+                 (if-let [transfer (db/get-from-db :bank-transfers (.getId command))]
               (if
                 (= (:state transfer) :started)
                 [(.getReason command) (TransferFailedEvent. (.getId command) (.getReason command))]
@@ -55,8 +56,8 @@
 
 (defn handle-start-transfer
   [^KafkaProducer producer ^MoneyTransferCommand command]
-  (feedback producer command
-            (let [id (.getId command)]
+  (transfer-feedback producer command (vg/identifier->string(.getId command))
+                 (let [id (.getId command)]
               (if-let [transfer (db/get-from-db :bank-transfers id)]
                 (str "transfer was already started, current status: " (name (:state transfer)))
                 (do
@@ -65,8 +66,8 @@
 
 (defn handle-remove-user
   [^KafkaProducer producer ^RemoveUserFromBankAccountCommand command]
-  (feedback producer command
-            (if-let [account (db/get-from-db :bank-accounts (.getIban command))]
+  (bank-feedback producer command (.getIban command)
+                 (if-let [account (db/get-from-db :bank-accounts (.getIban command))]
               (if (contains? (:users account) (.getUsername command))
                 (if (= (get (:users account) (.getUsername command)) (.getToken command))
                   (if (and (= 1 (count (:users account))) (not (= 0 (:balance account))))
