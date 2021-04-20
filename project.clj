@@ -1,4 +1,4 @@
-(defproject nl.openweb/bob2021 "0.1.0-SNAPSHOT"
+(defproject tech.gklijs/bkes-demo "0.1.0-SNAPSHOT"
   :description "Event Sourcing / CQRS bank demo"
   :license {:name "MIT License"
             :url  "https://opensource.org/licenses/MIT"

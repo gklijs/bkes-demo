@@ -3,7 +3,7 @@ version: "2.2"
 services:
 
   zk:
-    image: confluentinc/cp-zookeeper:6.1.0
+    image: confluentinc/cp-zookeeper:6.1.1
     hostname: zk
     container_name: zk
     ports:
@@ -15,7 +15,7 @@ services:
     restart: always
 
   kafka:
-    image: confluentinc/cp-kafka:6.1.0
+    image: confluentinc/cp-kafka:6.1.1
     hostname: kafka
     container_name: kafka
     ports:
@@ -42,7 +42,7 @@ services:
     restart: always
 
   schema-registry:
-    image: confluentinc/cp-schema-registry:6.1.0
+    image: confluentinc/cp-schema-registry:6.1.1
     hostname: schema-registry
     container_name: schema-registry
     ports:
