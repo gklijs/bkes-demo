@@ -2,10 +2,59 @@
 version: '2.2'
 services:
 
+  bkes-bank:
+    image: gklijs/bkes:latest
+    container_name: bkes-bank
+    ports:
+      - 50031:50030
+    volumes:
+      - bkes-bank-data:/opt/data
+    environment:
+      DATA_PATH: /opt/data
+      KAFKA_TOPIC: bank_events
+      KAFKA_BROKERS: kafka:19092
+      MAX_CONSUMER_THREADS: 8
+      RUST_LOG: INFO
+    restart: always
+
+  bkes-user:
+    image: gklijs/bkes:latest
+    container_name: bkes-user
+    ports:
+      - 50032:50030
+    volumes:
+      - bkes-user-data:/opt/data
+    environment:
+      DATA_PATH: /opt/data
+      KAFKA_TOPIC: user_events
+      KAFKA_BROKERS: kafka:19092
+      MAX_CONSUMER_THREADS: 8
+      RUST_LOG: INFO
+    restart: always
+
+  bkes-transfer:
+    image: gklijs/bkes:latest
+    container_name: bkes-transfer
+    ports:
+      - 50034:50030
+    volumes:
+      - bkes-transfer-data:/opt/data
+    environment:
+      DATA_PATH: /opt/data
+      KAFKA_TOPIC: transfer_events
+      KAFKA_BROKERS: kafka:19092
+      MAX_CONSUMER_THREADS: 8
+      RUST_LOG: INFO
+    restart: always
+
   command-handler:
     build:
       context: command-handler
     container_name: command-handler
+    depends_on:
+      - bkes-bank
+      - bkes-user
+      - bkes-transfer
     environment:
       KAFKA_BROKERS: "kafka:19092"
       SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
@@ -49,3 +98,8 @@ services:
     environment:
       - NGINX_PORT=80
     restart: always
+
+volumes:
+  bkes-bank-data:
+  bkes-user-data:
+  bkes-transfer-data:
