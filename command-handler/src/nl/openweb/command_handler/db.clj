@@ -17,10 +17,13 @@
   (get @(get-db type) id))
 
 (defn add-to-db! [type id entry]
-  (swap! (get-db type) assoc id entry))
+  (swap! (get-db type) assoc id (assoc entry :order 0)))
 
 (defn update-in-db! [type id update-function]
-  (swap! (get-db type) update id update-function))
+  (if
+    (get-from-db type id)
+    (swap! (get-db type) update id
+           (fn [m] (update (update-function m) :order #(+ 1 %))))))
 
 (defn remove-from-db! [type id]
   (swap! (get-db type) #(dissoc % id)))

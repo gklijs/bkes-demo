@@ -1,7 +1,7 @@
 (defproject nl.openweb/bank "0.1.0-SNAPSHOT"
   :description "front-end for the kafka workshop"
   :url "https://github.com/openweb-nl/kafka-graphql-examples/tree/master/frontend"
-  :dependencies [[org.clojure/clojure "1.10.2"]
+  :dependencies [[org.clojure/clojure "1.10.3"]
                  [org.clojure/clojurescript "1.10.773" :exclusions [com.google.errorprone/error_prone_annotations com.google.code.findbugs/jsr305]]
                  [reagent "1.0.0"]
                  [re-frame "1.1.2"]

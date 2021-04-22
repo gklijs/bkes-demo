@@ -3,7 +3,7 @@
  :avro            [[org.apache.avro/avro "1.10.1"]]
  :avro-serializer [[io.confluent/kafka-avro-serializer "6.1.1" :exclusions
                     [io.netty/netty org.slf4j/slf4j-log4j12 com.fasterxml.jackson.core/jackson-core]]]
- :clojure         [[org.clojure/clojure "1.10.2"]
+ :clojure         [[org.clojure/clojure "1.10.3"]
                    [org.clojure/core.specs.alpha "0.2.56"]
                    [org.clojure/spec.alpha "0.2.194"]]
  :jackson         [[com.fasterxml.jackson.core/jackson-annotations "2.12.3"]

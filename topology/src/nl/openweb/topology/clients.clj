@@ -1,5 +1,5 @@
 (ns nl.openweb.topology.clients
-  (:import (io.confluent.kafka.serializers KafkaAvroSerializer AbstractKafkaSchemaSerDeConfig KafkaAvroDeserializer KafkaAvroDeserializerConfig KafkaAvroDecoder)
+  (:import (io.confluent.kafka.serializers KafkaAvroSerializer AbstractKafkaSchemaSerDeConfig KafkaAvroDeserializer KafkaAvroDeserializerConfig)
            (io.confluent.kafka.serializers.subject TopicRecordNameStrategy)
            (org.apache.kafka.clients CommonClientConfigs)
            (org.apache.kafka.clients.consumer ConsumerConfig KafkaConsumer ConsumerRecords ConsumerRecord)
@@ -107,17 +107,20 @@
   (consume (str app-id "-" topic) app-id topic false function))
 
 (defn get-schema-registry-client
+  []
   (CachedSchemaRegistryClient. ^String schema-url 1000))
 
-(defn get-decoder
+(defn get-deserializer
   []
   (let [properties (Properties.)]
+    (.put properties AbstractKafkaSchemaSerDeConfig/SCHEMA_REGISTRY_URL_CONFIG schema-url)
     (.put properties KafkaAvroDeserializerConfig/SPECIFIC_AVRO_READER_CONFIG "true")
-    (KafkaAvroDecoder. (get-schema-registry-client) properties)))
+    (KafkaAvroDeserializer. (get-schema-registry-client) properties)))
 
 (defn get-serializer
   []
   (let [properties (Properties.)]
+    (.put properties AbstractKafkaSchemaSerDeConfig/SCHEMA_REGISTRY_URL_CONFIG schema-url)
     (.put properties AbstractKafkaSchemaSerDeConfig/AUTO_REGISTER_SCHEMAS false)
     (.put properties AbstractKafkaSchemaSerDeConfig/VALUE_SUBJECT_NAME_STRATEGY (.getName TopicRecordNameStrategy))
     (KafkaAvroSerializer. (get-schema-registry-client) properties)))
