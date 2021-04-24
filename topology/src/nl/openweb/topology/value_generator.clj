@@ -37,4 +37,4 @@
 
 (defn identifier->string
   [identifier]
-  (.toString (.bytes identifier)))
+  (.toString (bytes->uuid (.bytes identifier))))

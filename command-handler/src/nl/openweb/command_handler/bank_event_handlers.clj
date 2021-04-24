@@ -1,9 +1,7 @@
 (ns nl.openweb.command-handler.bank-event-handlers
-  (:require [nl.openweb.command-handler.db :as db]
-            [nl.openweb.command-handler.transfer-handlers :as saga-handlers])
+  (:require [nl.openweb.command-handler.db :as db])
   (:import (nl.openweb.data BankAccountCreatedEvent MoneyCreditedEvent MoneyDebitedEvent MoneyReturnedEvent
-                            TransferStartedEvent TransferCompletedEvent TransferFailedEvent UserAddedToBankAccountEvent
-                            UserRemovedFromBankAccountEvent)
+                            UserAddedToBankAccountEvent UserRemovedFromBankAccountEvent)
            (org.apache.kafka.clients.consumer ConsumerRecord)
            (org.apache.kafka.clients.producer KafkaProducer)))
 
@@ -31,24 +29,6 @@
   (db/update-in-db! :bank-accounts (.getIban event)
                     (fn [m] (update m :balance #(+ % (.getAmount event))))))
 
-(defn handle-transfer-started
-  [^KafkaProducer producer ^TransferStartedEvent event]
-  (db/add-to-db! :bank-transfers (.getId event)
-                 {:state :started})
-  (saga-handlers/handle-transfer-started producer event))
-
-(defn handle-transfer-completed
-  [^TransferCompletedEvent event]
-  (db/update-in-db! :bank-transfers (.getId event)
-                    (fn [m] (assoc m :state :complete)))
-  (saga-handlers/handle-transfer-completed event))
-
-(defn handle-transfer-failed
-  [^TransferFailedEvent event]
-  (db/update-in-db! :bank-transfers (.getId event)
-                    (fn [m] (assoc m :state :failed)))
-  (saga-handlers/handle-transfer-failed event))
-
 (defn handle-user-added
   [^UserAddedToBankAccountEvent event]
   (db/update-in-db! :bank-accounts (.getIban event)
@@ -60,15 +40,19 @@
                     (fn [m] (update m :users #(dissoc % (.getUsername event))))))
 
 (defn handle-event
-  [^KafkaProducer producer ^ConsumerRecord record]
-  (let [event (.value record)]
-    (condp instance? event
-      BankAccountCreatedEvent (handle-bank-account-creation event)
-      MoneyCreditedEvent (handle-money-credited event)
-      MoneyDebitedEvent (handle-money-debited event)
-      MoneyReturnedEvent (handle-money-returned event)
-      TransferStartedEvent (handle-transfer-started producer event)
-      TransferCompletedEvent (handle-transfer-completed event)
-      TransferFailedEvent (handle-transfer-failed event)
-      UserAddedToBankAccountEvent (handle-user-added event)
-      UserRemovedFromBankAccountEvent (handle-user-removed event))))
+  [^KafkaProducer event]
+  (condp instance? event
+    BankAccountCreatedEvent (handle-bank-account-creation event)
+    MoneyCreditedEvent (handle-money-credited event)
+    MoneyDebitedEvent (handle-money-debited event)
+    MoneyReturnedEvent (handle-money-returned event)
+    UserAddedToBankAccountEvent (handle-user-added event)
+    UserRemovedFromBankAccountEvent (handle-user-removed event)))
+
+(defn handle-event-kafka
+  [^ConsumerRecord record]
+  (handle-event (.value record)))
+
+(defn handle-event-bkes
+  [event-list]
+  (doseq [event event-list] (handle-event event)))

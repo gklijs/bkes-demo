@@ -19,9 +19,9 @@
   (let [[query-topic promise-map] (if (instance? CreateUserAccountCommand command)
                                     ["user_commands" (:user-promise-map db)]
                                     ["bank_commands" (:bank-promise-map db)])
-        key (vg/identifier->string (.getId command))
-        promise (promise)
-        id (.getId command)]
+        id (.getId command)
+        key (vg/identifier->string id)
+        promise (promise)]
     (swap! promise-map assoc id promise)
     (clients/produce (get-in db [:kafka-producer :producer]) query-topic key command)
     (let [result (deref promise time-out-value time-out-default)]

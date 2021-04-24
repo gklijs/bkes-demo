@@ -17,9 +17,9 @@
   (let [[query-topic promise-map] (if (instance? FindUserQuery query)
                                     ["user_queries" (:user-promise-map db)]
                                     ["bank_queries" (:bank-promise-map db)])
-        key (vg/identifier->string (.getId query))
-        promise (promise)
-        id (.getId query)]
+        id (.getId query)
+        key (vg/identifier->string id)
+        promise (promise)]
     (swap! promise-map assoc id promise)
     (clients/produce (get-in db [:kafka-producer :producer]) query-topic key query)
     (let [result (deref promise time-out-value time-out-default)]

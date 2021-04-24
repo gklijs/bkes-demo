@@ -9,7 +9,14 @@
                     (fn [m] (update m :users #(conj % (.getUsername event))))))
 
 (defn handle-event
+  [event]
+  (condp instance? event
+    UserAddedToBankAccountEvent (handle-user-added-to-bank-account-event event)))
+
+(defn handle-event-kafka
   [^ConsumerRecord record]
-  (let [event (.value record)]
-    (condp instance? event
-      UserAddedToBankAccountEvent (handle-user-added-to-bank-account-event event))))
+  (handle-event (.value record)))
+
+(defn handle-event-bkes
+  [event-list]
+  (doseq [event event-list] (handle-event event)))
