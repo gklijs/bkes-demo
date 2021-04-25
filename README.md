@@ -28,6 +28,7 @@ really about bkes [here](https://github.com/gklijs/bkes/discussions).
     * [Frontend](#frontend)
 * [Scripts](#scripts)
 * [Warning](WARNING.md)
+* [Future development](#future-development)
 
 ## <a id="prerequisites">Prerequisites</a>
 
@@ -298,3 +299,9 @@ There are several scripts to automate things. They are placed at the root level.
 * `restart.sh` is used to stop and start the whole setup. Once it's finished the application should be accessible at
   port 8181.
 * `synchronize.sh` is used as part of the restart to set both the Kafka topics and schema's in the schema registry.
+
+## <a id="future-development">Future development</a>
+
+The main thing left to fix is to no longer have to rely on Kafka for sending messages around for the commands and queries. This would preferably keep things simple, so sending binary messages around, where each connecting service states it's function, and possible it's domain and/or supported queries/commands it can handle. The projector might be able to rely on Kafka connect, such that it's keeping the state in one of the external db's supported by Kafka Connect, instead of using an in memory db. The architecture would then become something like:
+
+![Future overview](docs/future-overview.svg)

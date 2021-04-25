@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="924px" preserveAspectRatio="none" style="width:1476px;height:924px;" version="1.1" viewBox="0 0 1476 924" width="1476px" zoomAndPan="magnify"><defs/><g><!--MD5=[f6bfcafd820c9a76ef45106837fbc975]
+entity pgt--><rect fill="#ADD8E6" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="384" x="1081" y="553"/><rect fill="#ADD8E6" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1425" y="563"/><rect fill="#ADD8E6" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1421" y="567"/><rect fill="#ADD8E6" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1421" y="575"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="304" x="1111" y="641.2422">projection db</text><!--MD5=[deda91f2bf9c11baeebd5a13a4635f8d]
+entity pgb--><rect fill="#ADD8E6" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="388" x="157" y="553"/><rect fill="#ADD8E6" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="505" y="563"/><rect fill="#ADD8E6" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="501" y="567"/><rect fill="#ADD8E6" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="501" y="575"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="308" x="187" y="641.2422">aggregate db</text><!--MD5=[6d2a6cf4a8ae9c6575d0c7e23e26fe98]
+entity ka--><rect fill="#D3D3D3" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="212" x="1005" y="793"/><rect fill="#D3D3D3" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1177" y="803"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1173" y="807"/><rect fill="#D3D3D3" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1173" y="815"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="132" x="1035" y="881.2422">Kafka</text><!--MD5=[6377be883f12643b62e189b60fe92e84]
+entity ch--><rect fill="#FFFF00" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="506" x="14" y="313"/><rect fill="#FFFF00" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="480" y="323"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="476" y="327"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="476" y="335"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="426" x="44" y="401.2422">Command handler</text><!--MD5=[77b6a0c736885375a3ffb1a308147d21]
+entity pr--><rect fill="#FFFF00" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="292" x="1159" y="313"/><rect fill="#FFFF00" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1411" y="323"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1407" y="327"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1407" y="335"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="212" x="1189" y="401.2422">Projector</text><!--MD5=[dedfc5a9d92a37b91d8f948a8cc861cf]
+entity ge--><rect fill="#FFFF00" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="498" x="590" y="313"/><rect fill="#FFFF00" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="1048" y="323"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1044" y="327"/><rect fill="#FFFF00" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="1044" y="335"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="418" x="620" y="401.2422">GraphQL endpoint</text><!--MD5=[b9586600103814a499497f8f31890a4f]
+entity fs--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="442" x="264" y="41"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="666" y="51"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="662" y="55"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="662" y="63"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="362" x="294" y="129.2422">Frontend server</text><!--MD5=[25e42c86a776e1c683b472489ed04c1e]
+entity bk--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="204" x="571" y="793"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="735" y="803"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="731" y="807"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="731" y="815"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="124" x="601" y="881.2422">BKES</text><!--MD5=[a62cb8517d4f8cfb9a4a7bd142f99090]
+entity bl--><rect fill="#90EE90" height="120.9375" style="stroke:#A80036;stroke-width:3.0;" width="284" x="697" y="553"/><rect fill="#90EE90" height="20" style="stroke:#A80036;stroke-width:3.0;" width="30" x="941" y="563"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="937" y="567"/><rect fill="#90EE90" height="4" style="stroke:#A80036;stroke-width:3.0;" width="8" x="937" y="575"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="204" x="727" y="641.2422">BKE-lane</text><!--MD5=[979c31051cf8d07bdf927ed864b836ec]
+entity cl--><ellipse cx="839" cy="28" fill="#FFFFFF" rx="16" ry="16" style="stroke:#A80036;stroke-width:3.0;"/><path d="M839,44 L839,98 M813,60 L865,60 M839,98 L813,128 M839,98 L865,128 " fill="none" style="stroke:#A80036;stroke-width:3.0;"/><text fill="#000000" font-family="Roboto" font-size="52" lengthAdjust="spacing" textLength="124" x="777" y="181.2422">client</text><!--MD5=[4f6dad49e9557d231407ddca3dec87f8]
+link ge to bl--><path d="M839,443.8 C839,474.78 839,511.26 839,542.24 " fill="none" id="ge-bl" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="839,552.52,847,534.52,839,542.52,831,534.52,839,552.52" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="839,433.34,831,451.34,839,443.34,847,451.34,839,433.34" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[c3297a582d3a89a465219808e842a826]
+link fs to cl--><path d="M706.24,101 C726.26,101 746.28,101 766.3,101 " fill="none" id="fs-to-cl" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="776.78,101,758.78,93,766.78,101,758.78,109,776.78,101" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[f3db19617524fa2b1675bee631d7f11c]
+link cl to ge--><path d="M839,203.94 C839,236.52 839,271.88 839,301.64 " fill="none" id="cl-ge" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="839,312.34,847,294.34,839,302.34,831,294.34,839,312.34" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="839,193.74,831,211.74,839,203.74,847,211.74,839,193.74" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[5793bcff9ba08787ae5aa1fdf5112b82]
+link ch to bl--><path d="M417.06,436.92 C500.7,471.42 604.56,514.28 688.3,548.82 " fill="none" id="ch-bl" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="697.9,552.78,684.3018,538.5291,688.6532,548.9725,678.2098,553.3239,697.9,552.78" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="407.66,433.04,421.2205,447.3268,416.8967,436.8719,427.3516,432.5481,407.66,433.04" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[d68b08080d87464a530dbbaaa95355c9]
+reverse link pgt to ka--><path d="M1227,682.02 C1203.08,716.86 1174.14,759.02 1151.14,792.52 " fill="none" id="pgt-backto-ka" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="1232.96,673.34,1216.1701,683.6405,1227.2947,681.5804,1229.3548,692.705,1232.96,673.34" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[9955c8460b240defde3c06f4c8a9365c]
+link ch to pgb--><path d="M291.18,442.92 C302.36,474.32 315.6,511.54 326.78,542.96 " fill="none" id="ch-pgb" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="330.18,552.52,331.6864,532.88,326.8293,543.0981,316.6113,538.241,330.18,552.52" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="287.76,433.34,286.2877,452.9826,291.127,442.7561,301.3535,447.5954,287.76,433.34" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[0ed45a480f1e5c959ff72a9807eac756]
+link pr to pgt--><path d="M1295.68,443.8 C1291.48,474.78 1286.52,511.26 1282.32,542.24 " fill="none" id="pr-pgt" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="1280.94,552.52,1291.2836,535.7566,1282.2822,542.6105,1275.4284,533.6091,1280.94,552.52" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="1297.08,433.34,1286.7364,450.1034,1295.7378,443.2495,1302.5916,452.2509,1297.08,433.34" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[b0c9c1162d674302dd79491c7489e9cb]
+link pr to bl--><path d="M1181.02,437.78 C1113.58,471.94 1030.38,514.08 962.94,548.22 " fill="none" id="pr-bl" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="953.96,552.78,973.6326,551.7849,962.8813,548.2622,966.404,537.5109,953.96,552.78" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="1190.4,433.04,1170.7274,434.0351,1181.4787,437.5578,1177.956,448.3091,1190.4,433.04" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[47c64dc104d498dec348cd365ba1f9ed]
+link pgb to bk--><path d="M438.88,679.4 C484.42,712.78 539.88,753.44 585.38,786.78 " fill="none" id="pgb-bk" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="593.76,792.92,583.9835,775.8197,585.6987,787.0026,574.5157,788.7178,593.76,792.92" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="430.6,673.34,440.4053,690.4238,438.6713,679.2437,449.8513,677.5097,430.6,673.34" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[d2796fbbd868c8de95de3fa81242e80e]
+link bk to ka--><path d="M786.4,853 C855.82,853 925.24,853 994.66,853 " fill="none" id="bk-ka" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="1004.9,853,986.9,845,994.9,853,986.9,861,1004.9,853" style="stroke:#A80036;stroke-width:2.0;"/><polygon fill="#A80036" points="775.66,853,793.66,861,785.66,853,793.66,845,775.66,853" style="stroke:#A80036;stroke-width:2.0;"/><!--MD5=[889ce1f4b7e45c5c91f10decc3515c3f]
+@startuml
+skinparam shadowing false
+skinparam defaultFontName Roboto
+skinparam defaultFontSize 26
+
+database [projection db] as pgt #LightBlue
+database [aggregate db] as pgb #LightBlue
+[Kafka] as ka #LightGrey
+[Command handler] as ch #Yellow
+[Projector] as pr #Yellow
+[GraphQL endpoint] as ge #Yellow
+[Frontend server] as fs #LightGreen
+[BKES] as bk #LightGreen
+[BKE-lane] as bl #LightGreen
+actor client as cl #White
+
+ge <- -> bl
+cl <-left- fs
+cl <- -> ge
+ch <- -> bl
+pgt <- - ka
+ch <- -> pgb
+pr <- -> pgt
+pr <- -> bl
+pgb <-right-> bk
+bk <-right-> ka
+
+@enduml
+
+PlantUML version 1.2021.4(Sun Apr 04 10:49:39 CEST 2021)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: Dynamic Code Evolution 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: NL
+--></g></svg>
