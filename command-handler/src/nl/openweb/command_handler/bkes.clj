@@ -3,17 +3,25 @@
             [nl.openweb.topology.value-generator :as vg])
   (:import (io.confluent.kafka.serializers KafkaAvroDeserializer KafkaAvroSerializer)
            (nl.openweb.data Id)
-           (tech.gklijs.bkes.client BlockingClient)
-           (tech.gklijs.bkes.api RetrieveReply Record StartReply AddReply)))
+           (tech.gklijs.bkes.api RetrieveReply Record StartReply AddReply)
+           (tech.gklijs.bkes.client BlockingClient)))
 
 (defonce ^KafkaAvroDeserializer deserializer (clients/get-deserializer))
 (defonce ^KafkaAvroSerializer serializer (clients/get-serializer))
-(defonce bkes {:bank     (BlockingClient. "bkes-bank" 50031)
-               :user     (BlockingClient. "bkes-user" 50032)
-               :transfer (BlockingClient. "bkes-transfer" 50034)})
+(defonce bkes (if (System/getenv "GRPC_FROM_DOCKER")
+                {:bank     (BlockingClient. "bkes-bank" 50030)
+                 :user     (BlockingClient. "bkes-user" 50030)
+                 :transfer (BlockingClient. "bkes-transfer" 50030)}
+                {:bank     (BlockingClient. "localhost" 50031)
+                 :user     (BlockingClient. "localhost" 50032)
+                 :transfer (BlockingClient. "localhost" 50034)}))
 (defonce topics {:bank     "bank_events"
                  :user     "user_events"
                  :transfer "transfer_events"})
+
+(defn init
+  [bmap]
+  (reset! bkes bmap))
 
 (defn get-string-key
   [key]

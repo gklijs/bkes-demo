@@ -58,6 +58,7 @@ services:
     environment:
       KAFKA_BROKERS: "kafka:19092"
       SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      GRPC_FROM_DOCKER: 1
     mem_limit: 300m
     restart: always
 
