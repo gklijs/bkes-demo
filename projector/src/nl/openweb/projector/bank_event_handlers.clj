@@ -1,6 +1,7 @@
 (ns nl.openweb.projector.bank-event-handlers
   (:require [nl.openweb.projector.db :as db]
-            [nl.openweb.topology.clients :as clients])
+            [nl.openweb.topology.clients :as clients]
+            [nl.openweb.topology.value-generator :as vg])
   (:import (nl.openweb.data BankAccountCreatedEvent MoneyCreditedEvent MoneyDebitedEvent MoneyReturnedEvent TransferStartedEvent TransferCompletedEvent TransferFailedEvent UserRemovedFromBankAccountEvent UserAddedToBankAccountEvent TransactionHappenedEvent)
            (org.apache.kafka.clients.consumer ConsumerRecord)
            (org.apache.kafka.clients.producer KafkaProducer)))
@@ -58,7 +59,7 @@
                                           :new-balance (:balance updated-account)
                                           :changed-by  (.getAmount event)
                                           :from-to     (:from transfer)
-                                          :description (str "Cancelled transaction with id " (:transaction-id transfer) " because " (.getReason event))})]
+                                          :description (str "Cancelled transaction with id " (vg/identifier->string (.getId event)) " because " (.getReason event))})]
     (clients/produce producer "transaction_events" iban (transaction->the transaction))))
 
 (defn handle-transfer-started

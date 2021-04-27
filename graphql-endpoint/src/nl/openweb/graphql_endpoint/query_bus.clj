@@ -6,7 +6,7 @@
   (:import (nl.openweb.data FindUserQuery QuerySucceeded QueryFailed)))
 
 (def app-id "query-bus")
-(def time-out-value 1000)
+(def time-out-value 2000)
 (def time-out-default
   {:failure   true
    :timed-out true
